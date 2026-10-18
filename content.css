@@ -142,6 +142,48 @@
   border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
+.frogg-lang-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 7px;
+}
+
+.frogg-lang-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a7f3d0;
+  white-space: nowrap;
+}
+
+.frogg-lang-select {
+  flex: 1;
+  background: #141930;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 5px;
+  font-size: 11px;
+  padding: 3px 5px;
+}
+
+.frogg-btn-apply-lang {
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.frogg-btn-apply-lang:hover {
+  background: #4338ca;
+}
+
 .frogg-mode-banner {
   background: rgba(79, 70, 229, 0.16);
   border: 1px solid rgba(99, 102, 241, 0.35);

@@ -5,38 +5,59 @@
 // - https://teams.microsoft.com/*
 // - https://teams.live.com/*
 //
-// Multi-layer extraction for ALL meeting participants:
-// 1. MS Teams v2 Live Captions & Live Transcript DOM Scanner (Fluent UI v9 + Classic + Shadow DOM)
-// 2. Active Speaker Tile / Voice Activity Tracker (tracks who is currently speaking on the stage)
-// 3. Auto-Enabler for MS Teams Live Captions (clicks "More -> Language and speech -> Turn on live captions")
-// 4. Web Speech API hybrid fallback (attributes speech to active remote speaker if someone else is speaking)
+// Key Capabilities:
+// 1. STRICT CALL DETECTION: Only activates and shows the floating widget when inside an active MS Teams meeting/call.
+// 2. STRICT CAPTION ISOLATION: Never reads regular group chats, channels, or meeting text chat — ONLY reads the Live Captions / Live Transcript container.
+// 3. SPOKEN LANGUAGE SELECTOR: Defaults to "es-MX" (Español México) with selector in the floating menu; syncs with MS Teams Spoken Language modal.
+// 4. AUTO-ENABLE CC ON CALL START / SPEECH: Automatically activates Teams Live Captions when a call starts or as soon as someone starts speaking.
 
 (function initFroggIteAmsContentScript() {
   const isTopFrame = window === window.top;
-  if (window.__FROGGITEAMS_INITIALIZED_V2__) return;
-  window.__FROGGITEAMS_INITIALIZED_V2__ = true;
+  if (window.__FROGGITEAMS_INITIALIZED_V3__) return;
+  window.__FROGGITEAMS_INITIALIZED_V3__ = true;
 
+  const SUPPORTED_CC_LANGUAGES = [
+    { code: "es-MX", label: "🇲🇽 Español (México)", teamsKeywords: ["español (méxico)", "spanish (mexico)", "es-mx"] },
+    { code: "es-ES", label: "🇪🇸 Español (España)", teamsKeywords: ["español (españa)", "spanish (spain)", "es-es"] },
+    { code: "es-CL", label: "🇨🇱 Español (Chile / Latam)", teamsKeywords: ["español (méxico)", "spanish (mexico)", "español"] },
+    { code: "en-US", label: "🇺🇸 English (US)", teamsKeywords: ["english (united states)", "inglés (estados unidos)", "en-us"] },
+    { code: "pt-BR", label: "🇧🇷 Português (Brasil)", teamsKeywords: ["português (brasil)", "portuguese (brazil)", "pt-br"] }
+  ];
+
+  let selectedCcLang = "es-MX"; // Default: Español (México)
   let isCapturing = true;
   let isMinimized = false;
+  let inActiveCall = false;
+  let autoCcAttemptedForCall = false;
+  let autoCcEnablingInProgress = false;
   let useWebSpeechFallback = false;
   let speechRecognition = null;
   let meetingStartedMs = Date.now();
   let currentEntries = [];
-  let activeStageSpeaker = ""; // Tracks who has the active speaking ring in MS Teams
-  let captionNodeState = new WeakMap(); // DOM node -> last seen text
-  let lastSpeakerTextMap = new Map(); // speaker -> last committed text
-  let teamsCaptionsDetectedCount = 0;
+  let activeStageSpeaker = "";
+  let captionNodeState = new WeakMap();
+  let lastSpeakerTextMap = new Map();
 
   const iconUrl = chrome.runtime.getURL("assets/icon-48.png");
 
+  // Load saved CC language preference (defaults to es-MX)
+  chrome.storage.local.get(["froggiteams_cc_lang"], (res) => {
+    if (res?.froggiteams_cc_lang) {
+      selectedCcLang = res.froggiteams_cc_lang;
+      const sel = document.getElementById("frogg-cc-lang-select");
+      if (sel) sel.value = selectedCcLang;
+    }
+  });
+
   if (isTopFrame) {
     mountFloatingWidget();
+    updateWidgetVisibility(false);
   }
 
-  // Observe DOM mutations across the document
+  // MutationObserver strictly watching caption containers when in an active call
   const observer = new MutationObserver((mutations) => {
-    if (!isCapturing) return;
-    handleCaptionsMutations(mutations);
+    if (!inActiveCall || !isCapturing) return;
+    handleStrictCaptionMutations(mutations);
   });
 
   if (document.body) {
@@ -47,19 +68,120 @@
     });
   }
 
-  // Fast polling (500ms) for Fluent UI v9 virtualized caption rows & active speaker indicator
+  // Main lifecycle loop (every 600ms):
+  // 1. Checks if user is inside an active Teams meeting/call
+  // 2. Detects voice activity / active speaker and auto-enables CC + Español (México) when speech starts
+  // 3. Scans ONLY the Live Captions / Live Transcript DOM (strictly ignoring chat/channels)
   setInterval(() => {
-    if (!isCapturing) return;
-    detectActiveSpeakerOnStage();
-    scanAllParticipantsCaptions();
-  }, 500);
+    const nowInCall = checkIsInActiveTeamsMeeting();
+
+    if (nowInCall && !inActiveCall) {
+      // Just entered an active meeting!
+      inActiveCall = true;
+      autoCcAttemptedForCall = false;
+      meetingStartedMs = Date.now();
+      lastSpeakerTextMap.clear();
+      if (isTopFrame) {
+        updateWidgetVisibility(true);
+        const titleInput = document.getElementById("frogg-meeting-title");
+        if (titleInput) titleInput.value = detectTeamsMeetingTitle();
+        chrome.runtime.sendMessage({
+          type: "START_MEETING",
+          title: detectTeamsMeetingTitle(),
+          sourceUrl: window.location.href
+        });
+      }
+      // Proactively auto-enable CC shortly after call connects
+      setTimeout(() => {
+        if (inActiveCall && !areTeamsCaptionsCurrentlyOpen()) {
+          autoEnableTeamsLiveCaptionsSequence(selectedCcLang);
+        }
+      }, 1800);
+    } else if (!nowInCall && inActiveCall) {
+      // Left the meeting
+      inActiveCall = false;
+      autoCcAttemptedForCall = false;
+      if (isTopFrame) {
+        updateWidgetVisibility(false);
+      }
+    }
+
+    if (!inActiveCall || !isCapturing) return;
+
+    const someoneSpeaking = detectActiveSpeakerOnStage();
+    // If someone starts speaking in the meeting and Live Captions aren't open yet, auto-activate them immediately
+    if (someoneSpeaking && !areTeamsCaptionsCurrentlyOpen() && !autoCcAttemptedForCall && !autoCcEnablingInProgress) {
+      autoCcAttemptedForCall = true;
+      autoEnableTeamsLiveCaptionsSequence(selectedCcLang);
+    }
+
+    scanStrictCaptionContainers();
+  }, 600);
+
+  /**
+   * Strictly checks if the current Teams view is an ACTIVE meeting/call (not regular chat/calendar/channels)
+   */
+  function checkIsInActiveTeamsMeeting() {
+    // Must have active call controls (Hangup button, call microphone toggle, or call stage)
+    const callIndicators = [
+      '[data-tid="hangup-button"]',
+      '[data-tid="call-hangup"]',
+      '[data-tid="calling-unified-bar"]',
+      '[data-tid="call-stage"]',
+      '[data-tid="modern-calling-screen"]',
+      '[data-tid="closed-captions-renderer"]',
+      '[data-tid="closed-caption-v2-window-wrapper"]',
+      'button[aria-label*="Salir" i][data-tid*="hangup" i]',
+      'button[aria-label*="Leave" i][data-tid*="hangup" i]',
+      '#hangup-button'
+    ];
+
+    for (const sel of callIndicators) {
+      const el = querySelectorDeepFirst(sel);
+      if (el && isElementVisible(el)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function areTeamsCaptionsCurrentlyOpen() {
+    const captionWrapperSelectors = [
+      '[data-tid="closed-captions-renderer"]',
+      '[data-tid="closed-caption-v2-window-wrapper"]',
+      '[data-tid="closed-caption-item"]',
+      '[data-tid="call-transcript-panel"]'
+    ];
+    for (const sel of captionWrapperSelectors) {
+      const el = querySelectorDeepFirst(sel);
+      if (el && isElementVisible(el)) return true;
+    }
+    return false;
+  }
+
+  function isElementVisible(el) {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect?.();
+    return Boolean(rect && rect.width > 0 && rect.height > 0);
+  }
+
+  function updateWidgetVisibility(visible) {
+    const root = document.getElementById("froggiteams-widget-root");
+    if (!root) return;
+    root.style.display = visible ? "block" : "none";
+  }
 
   function mountFloatingWidget() {
     const existing = document.getElementById("froggiteams-widget-root");
     if (existing) existing.remove();
 
+    const langOptionsHtml = SUPPORTED_CC_LANGUAGES.map(
+      (l) => `<option value="${l.code}" ${l.code === selectedCcLang ? "selected" : ""}>${l.label}</option>`
+    ).join("");
+
     const root = document.createElement("div");
     root.id = "froggiteams-widget-root";
+    root.style.display = "none"; // Hidden until an active meeting is detected
     root.innerHTML = `
       <div class="frogg-panel" id="frogg-panel">
         <div class="frogg-header" id="frogg-drag-handle">
@@ -68,13 +190,13 @@
             <div class="frogg-title-wrap">
               <span class="frogg-title">FroggIteAms</span>
               <span class="frogg-status" id="frogg-status-badge">
-                <span class="frogg-dot live"></span> En Vivo · MS Teams
+                <span class="frogg-dot live"></span> En Reunión · MS Teams
               </span>
             </div>
           </div>
           <div class="frogg-header-actions">
-            <button class="frogg-icon-btn" id="frogg-btn-captions" title="Activar Subtítulos en Vivo de Teams para capturar a TODOS los asistentes">CC</button>
-            <button class="frogg-icon-btn" id="frogg-btn-mic" title="Micrófono Local (WebSpeech)">🎙️</button>
+            <button class="frogg-icon-btn" id="frogg-btn-captions" title="Activar Subtítulos en Vivo (CC) e Idioma en Teams">CC</button>
+            <button class="frogg-icon-btn" id="frogg-btn-mic" title="Respaldo Micrófono Local (WebSpeech)">🎙️</button>
             <button class="frogg-icon-btn" id="frogg-btn-dashboard" title="Abrir Menú Histórico y Reportes (Tactiq Hub)">📊</button>
             <button class="frogg-icon-btn" id="frogg-btn-minimize" title="Minimizar/Expandir">_</button>
           </div>
@@ -86,20 +208,28 @@
             <span class="frogg-timer" id="frogg-timer">00:00</span>
           </div>
 
+          <div class="frogg-lang-bar">
+            <label for="frogg-cc-lang-select" class="frogg-lang-label">🗣️ Idioma CC:</label>
+            <select id="frogg-cc-lang-select" class="frogg-lang-select">
+              ${langOptionsHtml}
+            </select>
+            <button id="frogg-btn-apply-lang" class="frogg-btn-apply-lang" title="Aplicar idioma de subtítulos en MS Teams">Aplicar</button>
+          </div>
+
           <div class="frogg-mode-banner" id="frogg-mode-banner">
-            <span>👥 Para capturar a <strong>todos los asistentes</strong>: pulsa <strong>CC</strong> o activa <em>Subtítulos en vivo</em> en Teams (<strong>Más ... → Idioma y voz → Mostrar subtítulos en vivo</strong>).</span>
+            <span>🐸 <strong>Modo Reunión Activo:</strong> Solo captura voz/subtítulos de la llamada (chats grupales ignorados). Idioma por defecto: <strong>Español (México)</strong>.</span>
           </div>
 
           <div class="frogg-stream" id="frogg-stream">
             <div class="frogg-empty" id="frogg-empty">
-              <p>🐸 <strong>Escuchando a todos los asistentes...</strong></p>
-              <p class="frogg-hint">Asegúrate de que los <strong>Subtítulos en vivo (Live Captions)</strong> estén visibles en la parte inferior de Teams (pulsa el botón <strong>CC</strong> arriba para activarlos automáticamente).</p>
+              <p>🐸 <strong>Esperando a que comiencen a hablar...</strong></p>
+              <p class="frogg-hint">Los subtítulos (CC) en <strong>Español (México)</strong> se activarán automáticamente al detectar voz o pulsando <strong>CC</strong>.</p>
             </div>
           </div>
 
           <div class="frogg-quick-input">
             <input type="text" id="frogg-manual-speaker" class="frogg-speaker-input" placeholder="Hablante" value="Tú" />
-            <input type="text" id="frogg-manual-text" class="frogg-text-input" placeholder="Escribe nota o frase en vivo..." />
+            <input type="text" id="frogg-manual-text" class="frogg-text-input" placeholder="Nota rápida en la reunión..." />
             <button id="frogg-btn-add-line" class="frogg-btn-small" title="Agregar a transcripción">+</button>
           </div>
 
@@ -114,23 +244,6 @@
 
     document.body.appendChild(root);
 
-    chrome.runtime.sendMessage({ type: "GET_STATE" }, (res) => {
-      if (res?.activeMeeting?.transcript?.length) {
-        currentEntries = res.activeMeeting.transcript;
-        if (res.activeMeeting.title) {
-          const titleInput = document.getElementById("frogg-meeting-title");
-          if (titleInput) titleInput.value = res.activeMeeting.title;
-        }
-        renderStream();
-      } else {
-        chrome.runtime.sendMessage({
-          type: "START_MEETING",
-          title: detectTeamsMeetingTitle(),
-          sourceUrl: window.location.href
-        });
-      }
-    });
-
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "local" && changes.froggiteams_active_meeting?.newValue) {
         const updated = changes.froggiteams_active_meeting.newValue;
@@ -140,13 +253,28 @@
     });
 
     setInterval(() => {
-      if (!isCapturing) return;
+      if (!inActiveCall || !isCapturing) return;
       const elapsed = Math.floor((Date.now() - meetingStartedMs) / 1000);
       const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
       const ss = String(elapsed % 60).padStart(2, "0");
       const timerEl = document.getElementById("frogg-timer");
       if (timerEl) timerEl.textContent = `${mm}:${ss}`;
     }, 1000);
+
+    document.getElementById("frogg-cc-lang-select").addEventListener("change", (e) => {
+      selectedCcLang = e.target.value;
+      chrome.storage.local.set({ froggiteams_cc_lang: selectedCcLang });
+      if (speechRecognition && useWebSpeechFallback) {
+        speechRecognition.lang = selectedCcLang;
+      }
+    });
+
+    document.getElementById("frogg-btn-apply-lang").addEventListener("click", () => {
+      const sel = document.getElementById("frogg-cc-lang-select");
+      selectedCcLang = sel?.value || "es-MX";
+      chrome.storage.local.set({ froggiteams_cc_lang: selectedCcLang });
+      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true);
+    });
 
     document.getElementById("frogg-btn-minimize").addEventListener("click", () => {
       isMinimized = !isMinimized;
@@ -159,7 +287,7 @@
     });
 
     document.getElementById("frogg-btn-captions").addEventListener("click", () => {
-      autoEnableTeamsLiveCaptionsSequence();
+      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true);
     });
 
     document.getElementById("frogg-btn-pause").addEventListener("click", (e) => {
@@ -167,7 +295,7 @@
       const statusBadge = document.getElementById("frogg-status-badge");
       if (isCapturing) {
         e.target.textContent = "⏸ Pausar";
-        statusBadge.innerHTML = `<span class="frogg-dot live"></span> En Vivo · MS Teams`;
+        statusBadge.innerHTML = `<span class="frogg-dot live"></span> En Reunión · MS Teams`;
       } else {
         e.target.textContent = "▶ Reanudar";
         statusBadge.innerHTML = `<span class="frogg-dot paused"></span> En Pausa`;
@@ -214,22 +342,347 @@
   }
 
   /**
-   * Sends a captured or updated line to background.js so that streaming updates from
-   * any participant in MS Teams replace the in-progress sentence cleanly rather than duplicating.
+   * STRICT EXCLUSION CHECK:
+   * Returns true if the node is inside any MS Teams chat pane, channel post list, or activity feed
+   * so we NEVER capture written chat messages.
    */
+  function isInsideChatOrChannelPane(node) {
+    let curr = node;
+    while (curr && curr !== document.body) {
+      const tid = (curr.getAttribute?.("data-tid") || "").toLowerCase();
+      const aria = (curr.getAttribute?.("aria-label") || "").toLowerCase();
+      const id = (curr.id || "").toLowerCase();
+
+      // Any chat pane, message pane, channel pane, or compose box is strictly excluded
+      if (
+        tid.includes("chat-pane") ||
+        tid.includes("message-pane") ||
+        tid.includes("channel-pane") ||
+        tid.includes("chat-list") ||
+        tid.includes("chat-item") ||
+        tid.includes("reply-chain") ||
+        id.includes("chat-pane") ||
+        id.includes("message-pane") ||
+        aria.includes("chat de la reunión") ||
+        aria.includes("meeting chat") ||
+        aria.includes("lista de chats") ||
+        aria.includes("chat list")
+      ) {
+        return true;
+      }
+      curr = curr.parentElement || curr.getRootNode?.()?.host;
+    }
+    return false;
+  }
+
+  /**
+   * STRICT INCLUSION CHECK:
+   * Returns true ONLY if the node is inside the official MS Teams Live Captions or Live Transcript container
+   */
+  function isStrictlyInsideLiveCaptionsContainer(node) {
+    if (!node || isInsideChatOrChannelPane(node)) return false;
+    let curr = node;
+    while (curr && curr !== document.body) {
+      const tid = (curr.getAttribute?.("data-tid") || "").toLowerCase();
+      const aria = (curr.getAttribute?.("aria-label") || "").toLowerCase();
+      const cls = (typeof curr.className === "string" ? curr.className : "").toLowerCase();
+
+      if (
+        tid === "closed-captions-renderer" ||
+        tid === "closed-caption-v2-window-wrapper" ||
+        tid === "closed-caption-item" ||
+        tid === "call-transcript-panel" ||
+        tid.includes("closed-caption") ||
+        tid.includes("live-caption") ||
+        cls.includes("closed-caption") ||
+        cls.includes("livecaption") ||
+        aria.includes("subtítulos en vivo") ||
+        aria.includes("live captions")
+      ) {
+        return true;
+      }
+      curr = curr.parentElement || curr.getRootNode?.()?.host;
+    }
+    return false;
+  }
+
+  function handleStrictCaptionMutations(mutations) {
+    for (const m of mutations) {
+      const targetEl =
+        m.target.nodeType === Node.TEXT_NODE ? m.target.parentElement : m.target;
+      if (!targetEl || targetEl.closest?.("#froggiteams-widget-root")) continue;
+
+      if (!isStrictlyInsideLiveCaptionsContainer(targetEl)) continue;
+
+      const captionRow = targetEl.closest?.(
+        '[data-tid="closed-caption-item"], [data-tid*="caption-item"], [data-tid*="transcript-item"], [role="listitem"], [class*="fui-ChatMessage"]'
+      );
+      if (captionRow && !isInsideChatOrChannelPane(captionRow)) {
+        extractFromCaptionRow(captionRow);
+      }
+    }
+  }
+
+  /**
+   * Scans ONLY the verified Live Captions / Call Transcript containers in MS Teams
+   */
+  function scanStrictCaptionContainers() {
+    const strictContainerSelectors = [
+      '[data-tid="closed-captions-renderer"]',
+      '[data-tid="closed-caption-v2-window-wrapper"]',
+      '[data-tid="call-transcript-panel"]',
+      '[data-tid*="closed-caption"]',
+      '[aria-label*="Subtítulos en vivo" i]',
+      '[aria-label*="Live captions" i]'
+    ];
+
+    const containers = querySelectorAllDeep(strictContainerSelectors.join(", "));
+    const processedRows = new Set();
+
+    containers.forEach((container) => {
+      if (
+        container.closest?.("#froggiteams-widget-root") ||
+        isInsideChatOrChannelPane(container)
+      ) {
+        return;
+      }
+
+      const rows = container.querySelectorAll(
+        '[data-tid="closed-caption-item"], [data-tid*="caption-item"], [data-tid*="transcript-item"], [role="listitem"], [class*="fui-ChatMessage"]'
+      );
+
+      rows.forEach((row) => {
+        if (processedRows.has(row) || isInsideChatOrChannelPane(row)) return;
+        processedRows.add(row);
+        extractFromCaptionRow(row);
+      });
+    });
+  }
+
+  function extractFromCaptionRow(row) {
+    if (!row || row.closest?.("#froggiteams-widget-root") || isInsideChatOrChannelPane(row)) {
+      return;
+    }
+
+    const authorEl = row.querySelector(
+      '[data-tid="author"], [data-tid*="author"], [data-tid*="speaker"], [class*="fui-ChatMessage__author"], [class*="author" i], [class*="speaker" i], [class*="DisplayName" i]'
+    );
+    const textEl = row.querySelector(
+      '[data-tid="closed-caption-text"], [data-tid*="caption-text"], [data-tid*="transcript-text"], [class*="fui-ChatMessage__body"], [class*="captionText" i]'
+    );
+
+    let speaker = "";
+    let text = "";
+
+    if (authorEl && textEl && authorEl !== textEl) {
+      speaker = (authorEl.innerText || authorEl.textContent || "").trim();
+      text = (textEl.innerText || textEl.textContent || "").trim();
+    } else {
+      const rawLines = (row.innerText || "")
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !/^\d{1,2}:\d{2}(\s*[ap]\.?\s*m\.?)?$/i.test(s));
+
+      if (rawLines.length >= 2) {
+        speaker = rawLines[0];
+        text = rawLines.slice(1).join(" ");
+      } else if (rawLines.length === 1) {
+        const colonMatch = rawLines[0].match(/^([^:]{2,45}):\s+(.+)$/);
+        if (colonMatch) {
+          speaker = colonMatch[1].trim();
+          text = colonMatch[2].trim();
+        }
+      }
+    }
+
+    speaker = speaker
+      .replace(/\b\d{1,2}:\d{2}(\s*[ap]\.?\s*m\.?)?\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (speaker && text.startsWith(speaker)) {
+      text = text.slice(speaker.length).replace(/^[:\s-]+/, "").trim();
+    }
+
+    if (!text || text.length < 2) return;
+
+    const prevRowText = captionNodeState.get(row);
+    if (prevRowText === `${speaker}|${text}`) return;
+    captionNodeState.set(row, `${speaker}|${text}`);
+
+    pushCaptionLine(speaker || activeStageSpeaker || "Asistente Teams", text, true);
+  }
+
+  /**
+   * Detects if any participant in the call has an active voice ring / speaking state
+   */
+  function detectActiveSpeakerOnStage() {
+    const activeSelectors = [
+      '[data-tid*="active-speaker"]',
+      '[class*="activeSpeaker" i]',
+      '[class*="speaking" i][data-tid*="participant"]',
+      '[aria-label*="hablando" i]',
+      '[aria-label*="speaking" i]'
+    ];
+    const el = querySelectorDeepFirst(activeSelectors.join(", "));
+    if (el && !el.closest?.("#froggiteams-widget-root")) {
+      const nameNode =
+        el.querySelector('[data-tid*="displayname" i], [class*="displayName" i]') || el;
+      const rawName = (nameNode.getAttribute("aria-label") || nameNode.textContent || "")
+        .replace(/\b(está hablando|is speaking|hablando|speaking|con audio|muted|silenciado)\b/gi, "")
+        .replace(/[(),]/g, "")
+        .trim();
+      if (rawName && rawName.length >= 2 && rawName.length <= 60) {
+        activeStageSpeaker = rawName;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Automatically activates MS Teams Live Captions AND sets Spoken Language (default: Español México)
+   */
+  async function autoEnableTeamsLiveCaptionsSequence(langCode = "es-MX", forceLanguageChange = false) {
+    if (autoCcEnablingInProgress) return;
+    autoCcEnablingInProgress = true;
+
+    const banner = document.getElementById("frogg-mode-banner");
+    const langObj =
+      SUPPORTED_CC_LANGUAGES.find((l) => l.code === langCode) || SUPPORTED_CC_LANGUAGES[0];
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    try {
+      const findClickableByKeywords = (keywords) => {
+        const all = querySelectorAllDeep(
+          'button, [role="menuitem"], [role="menuitemcheckbox"], [role="option"], [role="radio"], [data-tid*="caption"], [data-tid*="more"]'
+        );
+        return all.find((el) => {
+          if (el.closest?.("#froggiteams-widget-root")) return false;
+          const label = (
+            (el.getAttribute("aria-label") || "") +
+            " " +
+            (el.getAttribute("data-tid") || "") +
+            " " +
+            (el.textContent || "")
+          ).toLowerCase();
+          return keywords.some((kw) => label.includes(kw));
+        });
+      };
+
+      // 1. If captions are not open yet, open More (...) -> Language and speech -> Turn on live captions
+      if (!areTeamsCaptionsCurrentlyOpen()) {
+        let captionBtn = findClickableByKeywords([
+          "activar subtítulos",
+          "mostrar subtítulos en vivo",
+          "turn on live captions",
+          "live-captions-button",
+          "closed-captions-button"
+        ]);
+
+        if (!captionBtn) {
+          const moreBtn = findClickableByKeywords([
+            "calling-unified-bar-more",
+            "more-button",
+            "más acciones",
+            "more actions",
+            "más opciones"
+          ]);
+          if (moreBtn) {
+            moreBtn.click();
+            await sleep(380);
+
+            const langMenu = findClickableByKeywords([
+              "idioma y voz",
+              "language and speech",
+              "speech-and-language"
+            ]);
+            if (langMenu) {
+              langMenu.click();
+              await sleep(320);
+            }
+
+            captionBtn = findClickableByKeywords([
+              "mostrar subtítulos en vivo",
+              "activar subtítulos en vivo",
+              "subtítulos en vivo",
+              "turn on live captions",
+              "live captions"
+            ]);
+          }
+        }
+
+        if (captionBtn) {
+          captionBtn.click();
+          await sleep(600);
+        }
+      }
+
+      // 2. Configure Spoken Language in Teams Live Captions (e.g., Español (México)) if dialog or settings button is present
+      if (forceLanguageChange || areTeamsCaptionsCurrentlyOpen()) {
+        // Check if Teams popped up a "What language is everyone speaking?" modal or if the caption settings gear is visible
+        let settingsBtn = findClickableByKeywords([
+          "configuración de subtítulos",
+          "caption settings",
+          "cambiar idioma hablado",
+          "change spoken language",
+          "closed-caption-settings"
+        ]);
+
+        if (settingsBtn && forceLanguageChange) {
+          settingsBtn.click();
+          await sleep(350);
+
+          const spokenLangItem = findClickableByKeywords([
+            "idioma hablado",
+            "spoken language"
+          ]);
+          if (spokenLangItem) {
+            spokenLangItem.click();
+            await sleep(350);
+          }
+        }
+
+        // Look for the target language option (e.g., "Español (México)") in any open dropdown/combobox/dialog
+        const langOption = findClickableByKeywords(langObj.teamsKeywords);
+        if (langOption) {
+          langOption.click();
+          await sleep(250);
+
+          const confirmBtn = findClickableByKeywords([
+            "confirmar",
+            "actualizar",
+            "guardar",
+            "confirm",
+            "update",
+            "save"
+          ]);
+          if (confirmBtn) confirmBtn.click();
+        }
+      }
+
+      if (banner) {
+        banner.innerHTML = `<span style="color:#34d399;">✅ Subtítulos activos en <strong>${langObj.label}</strong> (capturando solo voz de la reunión).</span>`;
+      }
+    } catch (e) {
+      console.warn("[FroggIteAms Auto-CC]", e);
+    } finally {
+      autoCcEnablingInProgress = false;
+    }
+  }
+
   function pushCaptionLine(speaker, text, isUpdate = false) {
-    if (!isCapturing || !text) return;
+    if (!inActiveCall || !isCapturing || !text) return;
     let cleanSpeaker = (speaker || "").replace(/\s+/g, " ").trim();
     let cleanText = text.replace(/\s+/g, " ").trim();
     if (cleanText.length < 2) return;
 
-    // Filter out Teams UI system strings that aren't spoken dialogue
     if (isTeamsSystemLabel(cleanSpeaker) || isTeamsSystemLabel(cleanText)) {
       return;
     }
 
     if (!cleanSpeaker || cleanSpeaker === "Participante Teams") {
-      cleanSpeaker = activeStageSpeaker || "Participante Teams";
+      cleanSpeaker = activeStageSpeaker || "Asistente Teams";
     }
 
     const prevText = lastSpeakerTextMap.get(cleanSpeaker);
@@ -280,323 +733,12 @@
     return ignoreExact.some((w) => lower === w || lower.startsWith(w + " "));
   }
 
-  /**
-   * Detects who currently has the active voice border / speaking indicator on the MS Teams call stage
-   */
-  function detectActiveSpeakerOnStage() {
-    const activeSelectors = [
-      '[data-tid*="active-speaker"]',
-      '[class*="activeSpeaker" i]',
-      '[class*="speaking" i][data-tid*="participant"]',
-      '[aria-label*="hablando" i]',
-      '[aria-label*="speaking" i]'
-    ];
-    const el = document.querySelector(activeSelectors.join(", "));
-    if (el && !el.closest("#froggiteams-widget-root")) {
-      const nameNode =
-        el.querySelector('[data-tid*="displayname" i], [class*="displayName" i]') || el;
-      const rawName = (nameNode.getAttribute("aria-label") || nameNode.textContent || "")
-        .replace(/\b(está hablando|is speaking|hablando|speaking|con audio|muted|silenciado)\b/gi, "")
-        .replace(/[(),]/g, "")
-        .trim();
-      if (rawName && rawName.length >= 2 && rawName.length <= 60) {
-        activeStageSpeaker = rawName;
-      }
-    }
-  }
-
-  /**
-   * Mutation handler that watches live text changes inside the MS Teams caption bar
-   */
-  function handleCaptionsMutations(mutations) {
-    for (const m of mutations) {
-      const targetEl =
-        m.target.nodeType === Node.TEXT_NODE ? m.target.parentElement : m.target;
-      if (!targetEl || targetEl.closest?.("#froggiteams-widget-root")) continue;
-
-      const captionRow = targetEl.closest?.(
-        '[data-tid="closed-caption-item"], [data-tid*="caption-item"], [data-tid*="transcript-item"], [class*="closed-caption"] [role="listitem"], [class*="fui-ChatMessage"], [class*="ChatMessage"], [role="listitem"]'
-      );
-      if (captionRow && isInsideCaptionOrTranscriptWrapper(captionRow)) {
-        extractFromCaptionRow(captionRow);
-      }
-    }
-  }
-
-  function isInsideCaptionOrTranscriptWrapper(node) {
-    let curr = node;
-    while (curr && curr !== document.body) {
-      const tid = (curr.getAttribute?.("data-tid") || "").toLowerCase();
-      const cls = (typeof curr.className === "string" ? curr.className : "").toLowerCase();
-      const aria = (curr.getAttribute?.("aria-label") || "").toLowerCase();
-      const role = (curr.getAttribute?.("role") || "").toLowerCase();
-
-      if (
-        tid.includes("caption") ||
-        tid.includes("transcript") ||
-        cls.includes("caption") ||
-        cls.includes("transcript") ||
-        aria.includes("subtítulo") ||
-        aria.includes("caption") ||
-        aria.includes("transcripción") ||
-        aria.includes("transcript") ||
-        (role === "log" && (aria.includes("subt") || aria.includes("caption") || !aria))
-      ) {
-        return true;
-      }
-      curr = curr.parentElement || curr.getRootNode?.()?.host;
-    }
-    return false;
-  }
-
-  /**
-   * Comprehensive multi-strategy scanner for ALL attendees' captions in:
-   * - teams.cloud.microsoft (New Teams Fluent UI v9: uses fui-ChatMessageCompact / fui-ChatMessage__author / fui-ChatMessage__body or listitem inside caption wrapper)
-   * - Classic Teams & Live Transcript side panel
-   */
-  function scanAllParticipantsCaptions() {
-    // Strategy 1: Explicit caption/transcript containers in Teams v2 (teams.cloud.microsoft)
-    const containerSelectors = [
-      '[data-tid="closed-captions-renderer"]',
-      '[data-tid="closed-caption-v2-window-wrapper"]',
-      '[data-tid*="closed-caption"]',
-      '[data-tid*="live-captions"]',
-      '[data-tid*="call-transcript"]',
-      '[data-tid*="transcript-panel"]',
-      '[aria-label*="subtítulo" i]',
-      '[aria-label*="caption" i]',
-      '[aria-label*="transcripción" i]',
-      '[aria-label*="transcript" i]',
-      '[class*="closedCaption" i]',
-      '[class*="liveCaption" i]',
-      '[class*="captionWrapper" i]',
-      '[class*="transcript" i][role="region"]',
-      '[role="log"]'
-    ];
-
-    const containers = querySelectorAllDeep(containerSelectors.join(", "));
-    const processedRows = new Set();
-
-    containers.forEach((container) => {
-      if (container.closest?.("#froggiteams-widget-root")) return;
-
-      // Find individual speaker rows inside this container
-      const rows = container.querySelectorAll(
-        '[data-tid="closed-caption-item"], [data-tid*="caption-item"], [data-tid*="transcript-item"], [role="listitem"], [class*="fui-ChatMessage"], [class*="ChatMessage"], [class*="item" i]'
-      );
-
-      if (rows.length > 0) {
-        rows.forEach((row) => {
-          if (processedRows.has(row)) return;
-          processedRows.add(row);
-          extractFromCaptionRow(row);
-        });
-      } else {
-        // Container itself might hold direct author + text blocks
-        extractFromCaptionRow(container);
-      }
-    });
-
-    // Strategy 2: Direct Fluent UI v9 message items that have caption author/text data-tids anywhere on page
-    const directItems = querySelectorAllDeep(
-      '[data-tid="closed-caption-item"], [data-tid="closed-caption-text"], [data-tid*="caption-text"], [class*="fui-ChatMessage__body"]'
-    );
-    directItems.forEach((el) => {
-      if (el.closest?.("#froggiteams-widget-root")) return;
-      const row =
-        el.closest(
-          '[data-tid="closed-caption-item"], [role="listitem"], [class*="fui-ChatMessage"]'
-        ) || el.parentElement;
-      if (row && !processedRows.has(row)) {
-        processedRows.add(row);
-        extractFromCaptionRow(row);
-      }
-    });
-  }
-
-  function extractFromCaptionRow(row) {
-    if (!row || row.closest?.("#froggiteams-widget-root")) return;
-
-    // 1. Try explicit author & text sub-elements (Teams v2 Fluent UI v9 & Classic)
-    const authorEl = row.querySelector(
-      '[data-tid="author"], [data-tid*="author"], [data-tid*="speaker"], [class*="fui-ChatMessage__author"], [class*="author" i], [class*="speaker" i], [class*="DisplayName" i], [id*="author" i]'
-    );
-    const textEl = row.querySelector(
-      '[data-tid="closed-caption-text"], [data-tid*="caption-text"], [data-tid*="transcript-text"], [class*="fui-ChatMessage__body"], [class*="captionText" i], [class*="messageBody" i]'
-    );
-
-    let speaker = "";
-    let text = "";
-
-    if (authorEl && textEl && authorEl !== textEl) {
-      speaker = (authorEl.innerText || authorEl.textContent || "").trim();
-      text = (textEl.innerText || textEl.textContent || "").trim();
-    } else {
-      // 2. Fallback: parse innerText lines or leaf text nodes inside the row
-      const rawLines = (row.innerText || "")
-        .split(/\r?\n/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0 && !/^\d{1,2}:\d{2}(\s*[ap]\.?\s*m\.?)?$/i.test(s));
-
-      if (rawLines.length >= 2) {
-        speaker = rawLines[0];
-        text = rawLines.slice(1).join(" ");
-      } else if (rawLines.length === 1) {
-        // Check if format is "Nombre Apellido: Hola a todos"
-        const colonMatch = rawLines[0].match(/^([^:]{2,45}):\s+(.+)$/);
-        if (colonMatch) {
-          speaker = colonMatch[1].trim();
-          text = colonMatch[2].trim();
-        } else if (authorEl) {
-          speaker = (authorEl.textContent || "").trim();
-          text = rawLines[0].replace(speaker, "").trim();
-        }
-      }
-    }
-
-    // Clean speaker name (remove timestamps or status badges attached to name)
-    speaker = speaker
-      .replace(/\b\d{1,2}:\d{2}(\s*[ap]\.?\s*m\.?)?\b/gi, "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    // Remove speaker prefix if accidentally repeated at start of text
-    if (speaker && text.startsWith(speaker)) {
-      text = text.slice(speaker.length).replace(/^[:\s-]+/, "").trim();
-    }
-
-    if (!text || text.length < 2) return;
-
-    const prevRowText = captionNodeState.get(row);
-    if (prevRowText === `${speaker}|${text}`) return;
-    captionNodeState.set(row, `${speaker}|${text}`);
-
-    teamsCaptionsDetectedCount++;
-    if (teamsCaptionsDetectedCount === 1) {
-      const banner = document.getElementById("frogg-mode-banner");
-      if (banner) {
-        banner.innerHTML = `<span style="color:#34d399;">✅ <strong>Capturando subtítulos multi-asistente de MS Teams en tiempo real</strong>.</span>`;
-      }
-    }
-
-    pushCaptionLine(speaker || activeStageSpeaker || "Asistente Teams", text, true);
-  }
-
-  function querySelectorAllDeep(selector, root = document) {
-    let results = [];
-    try {
-      results.push(...Array.from(root.querySelectorAll(selector)));
-    } catch {}
-    const allElements = root.querySelectorAll("*");
-    for (const el of allElements) {
-      if (el.shadowRoot) {
-        results.push(...querySelectorAllDeep(selector, el.shadowRoot));
-      }
-    }
-    return results;
-  }
-
-  /**
-   * Automatically navigates the MS Teams v2 menu to turn on Live Captions ("Subtítulos en vivo")
-   * so that ALL remote participants' voices are transcribed by Teams into the DOM.
-   */
-  async function autoEnableTeamsLiveCaptionsSequence() {
-    const banner = document.getElementById("frogg-mode-banner");
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-    const findClickableByKeywords = (keywords) => {
-      const all = querySelectorAllDeep(
-        'button, [role="menuitem"], [role="menuitemcheckbox"], [data-tid*="caption"], [data-tid*="more"]'
-      );
-      return all.find((el) => {
-        if (el.closest?.("#froggiteams-widget-root")) return false;
-        const label = (
-          (el.getAttribute("aria-label") || "") +
-          " " +
-          (el.getAttribute("data-tid") || "") +
-          " " +
-          (el.textContent || "")
-        ).toLowerCase();
-        return keywords.some((kw) => label.includes(kw));
-      });
-    };
-
-    // Step 1: Check if "Turn on live captions" / "Subtítulos en vivo" button is already visible
-    let captionBtn = findClickableByKeywords([
-      "activar subtítulos",
-      "mostrar subtítulos en vivo",
-      "turn on live captions",
-      "live-captions-button",
-      "closed-captions-button"
-    ]);
-
-    if (captionBtn) {
-      captionBtn.click();
-      if (banner) {
-        banner.innerHTML = `<span style="color:#34d399;">✅ Subtítulos en vivo de Teams activados para todos los asistentes.</span>`;
-      }
-      return;
-    }
-
-    // Step 2: Click "More" / "Más" (...) button in the Teams call toolbar
-    const moreBtn = findClickableByKeywords([
-      "calling-unified-bar-more",
-      "more-button",
-      "más acciones",
-      "more actions",
-      "más opciones"
-    ]);
-
-    if (moreBtn) {
-      moreBtn.click();
-      await sleep(350);
-
-      // Step 3: Check if "Language and speech" / "Idioma y voz" submenu exists in Teams v2
-      const langMenu = findClickableByKeywords([
-        "idioma y voz",
-        "language and speech",
-        "speech-and-language"
-      ]);
-      if (langMenu) {
-        langMenu.click();
-        await sleep(300);
-      }
-
-      // Step 4: Click "Turn on live captions" / "Mostrar subtítulos en vivo"
-      captionBtn = findClickableByKeywords([
-        "subtítulos en vivo",
-        "live captions",
-        "closed-captions"
-      ]);
-
-      if (captionBtn) {
-        captionBtn.click();
-        if (banner) {
-          banner.innerHTML = `<span style="color:#34d399;">✅ ¡Subtítulos en vivo de Teams activados! Ahora se transcribirá a todos los asistentes.</span>`;
-        }
-        return;
-      }
-    }
-
-    if (banner) {
-      banner.innerHTML = `<span style="color:#fde68a;">👉 En la barra de Teams haz clic en <strong>Más (...) → Idioma y voz → Mostrar subtítulos en vivo</strong>. Así Teams decodifica el audio de todos los asistentes y FroggIteAms los captura al instante.</span>`;
-    }
-  }
-
-  /**
-   * Optional Web Speech API microphone fallback
-   */
   function toggleWebSpeechRecognition() {
     const micBtn = document.getElementById("frogg-btn-mic");
     const banner = document.getElementById("frogg-mode-banner");
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRec) {
-      if (banner) {
-        banner.innerHTML = `<span style="color:#fca5a5;">⚠️ Activa Subtítulos en vivo (CC) en Teams para capturar a todos.</span>`;
-      }
-      return;
-    }
+    if (!SpeechRec) return;
 
     if (useWebSpeechFallback && speechRecognition) {
       useWebSpeechFallback = false;
@@ -604,24 +746,18 @@
         speechRecognition.stop();
       } catch {}
       micBtn?.classList.remove("active");
-      if (banner) {
-        banner.innerHTML = `<span>👥 Modo Subtítulos de Teams activo (captura a todos los asistentes).</span>`;
-      }
       return;
     }
 
     useWebSpeechFallback = true;
     micBtn?.classList.add("active");
-    if (banner) {
-      banner.innerHTML = `<span style="color:#34d399;">🎙️ Micrófono local + Subtítulos de Teams activos. (Para capturar a los demás con auriculares, pulsa <strong>CC</strong> para activar Subtítulos en vivo de Teams).</span>`;
-    }
-
     speechRecognition = new SpeechRec();
-    speechRecognition.lang = "es-CL";
+    speechRecognition.lang = selectedCcLang || "es-MX";
     speechRecognition.continuous = true;
     speechRecognition.interimResults = true;
 
     speechRecognition.onresult = (event) => {
+      if (!inActiveCall) return;
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const res = event.results[i];
         const phrase = res[0]?.transcript?.trim();
@@ -637,7 +773,7 @@
     };
 
     speechRecognition.onend = () => {
-      if (useWebSpeechFallback) {
+      if (useWebSpeechFallback && inActiveCall) {
         try {
           speechRecognition.start();
         } catch {}
@@ -689,6 +825,35 @@
     stream.scrollTop = stream.scrollHeight;
   }
 
+  function querySelectorDeepFirst(selector, root = document) {
+    try {
+      const found = root.querySelector(selector);
+      if (found) return found;
+    } catch {}
+    const allElements = root.querySelectorAll("*");
+    for (const el of allElements) {
+      if (el.shadowRoot) {
+        const foundInShadow = querySelectorDeepFirst(selector, el.shadowRoot);
+        if (foundInShadow) return foundInShadow;
+      }
+    }
+    return null;
+  }
+
+  function querySelectorAllDeep(selector, root = document) {
+    let results = [];
+    try {
+      results.push(...Array.from(root.querySelectorAll(selector)));
+    } catch {}
+    const allElements = root.querySelectorAll("*");
+    for (const el of allElements) {
+      if (el.shadowRoot) {
+        results.push(...querySelectorAllDeep(selector, el.shadowRoot));
+      }
+    }
+    return results;
+  }
+
   function detectTeamsMeetingTitle() {
     const raw = document.title || "";
     const cleaned = raw
@@ -707,7 +872,12 @@
     handle.onmousedown = dragMouseDown;
 
     function dragMouseDown(e) {
-      if (e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+      if (
+        e.target.tagName === "BUTTON" ||
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "SELECT"
+      )
+        return;
       e.preventDefault();
       pos3 = e.clientX;
       pos4 = e.clientY;
