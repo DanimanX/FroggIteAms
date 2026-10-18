@@ -1,0 +1,85 @@
+name: Build & Package Chrome Extension
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-chrome-extension:
+    name: Validate & Compile Chrome Plugin (.zip & .crx)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate Manifest & JavaScript Syntax
+        run: |
+          node -e 'const m = require("./manifest.json"); if (m.manifest_version !== 3) process.exit(1); console.log("Validated Manifest V3:", m.name, m.version);'
+          node --check background.js
+          node --check content.js
+          node --check popup.js
+          node --check dashboard.js
+          node --check lib/ai-providers.js
+          node --check lib/exporter.js
+          node --check lib/sample-data.js
+
+      - name: Assemble Production Chrome Extension Directory (dist/)
+        run: |
+          mkdir -p dist/froggiteams-extension
+          cp manifest.json dist/froggiteams-extension/
+          cp background.js content.js content.css popup.html popup.css popup.js dashboard.html dashboard.css dashboard.js README.md dist/froggiteams-extension/
+          cp -r assets dist/froggiteams-extension/
+          cp -r lib dist/froggiteams-extension/
+
+      - name: Package Chrome Extension Archive (.zip)
+        run: |
+          cd dist/froggiteams-extension
+          zip -r ../froggiteams-chrome-extension.zip .
+          ls -lh ../froggiteams-chrome-extension.zip
+
+      - name: Package Signed Chrome Extension (.crx)
+        run: |
+          npx --yes crx3 dist/froggiteams-extension -p dist/froggiteams.pem -o dist/froggiteams-chrome-extension.crx || true
+          ls -la dist/
+
+      - name: Upload Chrome Extension Bundle (.zip & .crx) Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: froggiteams-chrome-extension
+          path: |
+            dist/froggiteams-chrome-extension.zip
+            dist/froggiteams-chrome-extension.crx
+            dist/froggiteams-extension/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Publish Release Asset on Tag or Main Push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.1.${{ github.run_number }}
+          name: "FroggIteAms Chrome Extension v1.1.${{ github.run_number }}"
+          body: |
+            Automated build of the **FroggIteAms** Chrome Extension (Manifest V3).
+            - Download **`froggiteams-chrome-extension.zip`** to load unpacked in `chrome://extensions/` (or **`froggiteams-chrome-extension.crx`**).
+          files: |
+            dist/froggiteams-chrome-extension.zip
+            dist/froggiteams-chrome-extension.crx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
