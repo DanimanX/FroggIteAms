@@ -41,10 +41,10 @@ jobs:
 
       - name: Assemble Production Chrome Extension Directory (dist/)
         run: |
-          mkdir -p dist/froggiteams-extension
+          mkdir -p dist/froggiteams-extension/assets
           cp manifest.json dist/froggiteams-extension/
           cp background.js content.js content.css popup.html popup.css popup.js dashboard.html dashboard.css dashboard.js README.md dist/froggiteams-extension/
-          cp -r assets dist/froggiteams-extension/
+          cp assets/icon-*.png dist/froggiteams-extension/assets/
           cp -r lib dist/froggiteams-extension/
 
       - name: Package Chrome Extension Archive (.zip)

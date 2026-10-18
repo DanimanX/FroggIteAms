@@ -31,6 +31,24 @@
 
 ---
 
+## 📸 Screenshots & UI Preview
+
+### 1. In-Call Floating Transcriber Window (`teams.cloud.microsoft`)
+Automatically activates when you join a Microsoft Teams meeting, enables **Live Captions (CC)** in **Spanish (Mexico)** by default, captures all participants in real time, and continuously auto-saves every spoken line.
+
+<p align="center">
+  <img src="assets/preview-floating-widget.png" alt="FroggIteAms In-Call Floating Widget in Microsoft Teams" width="900" />
+</p>
+
+### 2. Full Meeting History & AI Requests Hub (Tactiq-Style Dashboard)
+Browse past meetings, filter by speaker or keyword, curate **⭐ Highlights**, export to `.TXT` / `.CSV`, and generate **AI Action & Requests Reports**.
+
+<p align="center">
+  <img src="assets/preview-dashboard-panel.png" alt="FroggIteAms Dashboard Panel and Meeting History" width="900" />
+</p>
+
+---
+
 ## ✨ Key Features
 
 1. **🎙️ Real-Time Transcription in Microsoft Teams (`teams.cloud.microsoft`, `teams.microsoft.com`, `teams.live.com`)**
