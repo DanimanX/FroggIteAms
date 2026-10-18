@@ -1,12 +1,13 @@
 // background.js
 // Service Worker for FroggIteAms Chrome Extension
-// Coordinates live Microsoft Teams transcription state, persistent meeting history,
-// Google OAuth 2.0 flow for Gemini, and multi-provider AI report generation.
+// Coordinates live Microsoft Teams transcription state, real-time auto-saving into meeting history
+// (so closing a meeting or tab NEVER loses data), Google OAuth 2.0 flow for Gemini, and multi-provider AI reports.
 
 import { SAMPLE_MEETING } from "./lib/sample-data.js";
 import {
   DEFAULT_AI_CONFIG,
   generateRequestsReportWithAI,
+  generateHeuristicRequestsReport,
   refineLiveCaptionWithAI
 } from "./lib/ai-providers.js";
 
@@ -73,6 +74,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // keep channel open for async response
 });
 
+/**
+ * Upserts a meeting into the permanent `froggiteams_meetings` array whenever it has >= 1 transcript line.
+ * This guarantees ZERO data loss even if the Teams meeting closes abruptly or the browser tab is closed.
+ */
+function upsertMeetingIntoHistory(meetings, meetingToSave) {
+  if (!meetingToSave || !Array.isArray(meetingToSave.transcript) || meetingToSave.transcript.length === 0) {
+    return meetings;
+  }
+  const idx = meetings.findIndex(m => m.id === meetingToSave.id);
+  if (idx !== -1) {
+    meetings[idx] = { ...meetingToSave };
+  } else {
+    meetings.unshift({ ...meetingToSave });
+  }
+  return meetings;
+}
+
 async function handleMessage(message, sender) {
   switch (message.type) {
     case "GET_STATE": {
@@ -94,6 +112,30 @@ async function handleMessage(message, sender) {
     }
 
     case "START_MEETING": {
+      const store = await chrome.storage.local.get([
+        STORAGE_KEYS.ACTIVE_MEETING,
+        STORAGE_KEYS.MEETINGS,
+        STORAGE_KEYS.AI_CONFIG
+      ]);
+      let meetings = store[STORAGE_KEYS.MEETINGS] || [SAMPLE_MEETING];
+      const existingActive = store[STORAGE_KEYS.ACTIVE_MEETING];
+      const aiConfig = store[STORAGE_KEYS.AI_CONFIG] || DEFAULT_AI_CONFIG;
+
+      // Before starting a new meeting, if there was a previous active meeting with transcript lines,
+      // finalize and persist it into `meetings` so it is NEVER overwritten or lost!
+      if (existingActive && Array.isArray(existingActive.transcript) && existingActive.transcript.length > 0) {
+        // If START_MEETING was called within the same call session (e.g. from another frame or re-render), reuse it!
+        const ageMs = Date.now() - new Date(existingActive.startedAt).getTime();
+        if (existingActive.isLive && ageMs < 4 * 3600 * 1000 && !message.forceNew) {
+          return { activeMeeting: existingActive, meetings };
+        }
+        existingActive.isLive = false;
+        if (!existingActive.requestsReport) {
+          existingActive.requestsReport = generateHeuristicRequestsReport(existingActive);
+        }
+        meetings = upsertMeetingIntoHistory(meetings, existingActive);
+      }
+
       const now = new Date();
       const meeting = {
         id: message.meetingId || `teams-${now.getTime()}`,
@@ -102,23 +144,28 @@ async function handleMessage(message, sender) {
         startedDisplay: formatTactiqStartTime(now),
         durationMinutes: 1,
         durationDisplay: "1 minutes",
-        sourceUrl: message.sourceUrl || sender?.tab?.url || "https://teams.microsoft.com/",
+        sourceUrl: message.sourceUrl || sender?.tab?.url || "https://teams.cloud.microsoft/",
         participants: message.participants || [],
         highlights: [],
         transcript: [],
         requestsReport: null,
         isLive: true
       };
-      await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_MEETING]: meeting });
-      return { activeMeeting: meeting };
+      await chrome.storage.local.set({
+        [STORAGE_KEYS.ACTIVE_MEETING]: meeting,
+        [STORAGE_KEYS.MEETINGS]: meetings
+      });
+      return { activeMeeting: meeting, meetings };
     }
 
     case "CAPTION_ENTRY": {
       const store = await chrome.storage.local.get([
         STORAGE_KEYS.ACTIVE_MEETING,
+        STORAGE_KEYS.MEETINGS,
         STORAGE_KEYS.AI_CONFIG
       ]);
       let active = store[STORAGE_KEYS.ACTIVE_MEETING];
+      let meetings = store[STORAGE_KEYS.MEETINGS] || [SAMPLE_MEETING];
       const aiConfig = store[STORAGE_KEYS.AI_CONFIG] || DEFAULT_AI_CONFIG;
 
       if (!active) {
@@ -130,7 +177,7 @@ async function handleMessage(message, sender) {
           startedDisplay: formatTactiqStartTime(now),
           durationMinutes: 1,
           durationDisplay: "1 minutes",
-          sourceUrl: sender?.tab?.url || "https://teams.microsoft.com/",
+          sourceUrl: sender?.tab?.url || "https://teams.cloud.microsoft/",
           participants: [],
           highlights: [],
           transcript: [],
@@ -139,7 +186,11 @@ async function handleMessage(message, sender) {
         };
       }
 
-      if (message.meetingTitle && message.meetingTitle !== "Microsoft Teams") {
+      if (
+        message.meetingTitle &&
+        message.meetingTitle !== "Microsoft Teams" &&
+        message.meetingTitle !== "Reunión Microsoft Teams"
+      ) {
         active.title = message.meetingTitle;
       }
 
@@ -162,13 +213,18 @@ async function handleMessage(message, sender) {
       active.durationDisplay = `${durationMin} minutes`;
 
       const lastEntry = active.transcript[active.transcript.length - 1];
-      // Merge or update if same speaker within recent window and text is a continuation
+      // Merge or update if same speaker within recent window and text is a streaming continuation
       if (
         lastEntry &&
         lastEntry.speaker === speaker &&
-        (message.isUpdate || text.startsWith(lastEntry.text.slice(0, 15)))
+        (message.isUpdate ||
+          text.startsWith(lastEntry.text.slice(0, Math.min(14, lastEntry.text.length))) ||
+          lastEntry.text.startsWith(text.slice(0, Math.min(14, text.length))))
       ) {
-        lastEntry.text = text;
+        // Keep the longer/newer version of the streaming caption
+        if (text.length >= lastEntry.text.length || message.isUpdate) {
+          lastEntry.text = text;
+        }
         if (message.highlighted) {
           lastEntry.highlighted = true;
           syncHighlight(active, lastEntry);
@@ -187,8 +243,17 @@ async function handleMessage(message, sender) {
         }
       }
 
-      await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_MEETING]: active });
-      return { activeMeeting: active };
+      // Auto-update requests report heuristically in real time so even before AI runs, report is ready
+      active.requestsReport = generateHeuristicRequestsReport(active);
+
+      // CRITICAL: Continuously auto-save `active` into `meetings` history on EVERY caption entry!
+      meetings = upsertMeetingIntoHistory(meetings, active);
+
+      await chrome.storage.local.set({
+        [STORAGE_KEYS.ACTIVE_MEETING]: active,
+        [STORAGE_KEYS.MEETINGS]: meetings
+      });
+      return { activeMeeting: active, meetings };
     }
 
     case "TOGGLE_HIGHLIGHT": {
@@ -203,7 +268,11 @@ async function handleMessage(message, sender) {
 
       if (active && (!meetingId || active.id === meetingId)) {
         toggleHighlightOnMeeting(active, time, speaker, text);
-        await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_MEETING]: active });
+        meetings = upsertMeetingIntoHistory(meetings, active);
+        await chrome.storage.local.set({
+          [STORAGE_KEYS.ACTIVE_MEETING]: active,
+          [STORAGE_KEYS.MEETINGS]: meetings
+        });
       }
 
       const idx = meetings.findIndex(m => m.id === meetingId);
@@ -225,25 +294,20 @@ async function handleMessage(message, sender) {
       let meetings = store[STORAGE_KEYS.MEETINGS] || [];
       const aiConfig = store[STORAGE_KEYS.AI_CONFIG] || DEFAULT_AI_CONFIG;
 
-      if (!active) {
+      if (!active || !Array.isArray(active.transcript) || active.transcript.length === 0) {
+        await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_MEETING]: null });
         return { meetings };
       }
 
       active.isLive = false;
-      if (active.transcript.length > 0 && !active.requestsReport) {
-        try {
-          active.requestsReport = await generateRequestsReportWithAI(active, aiConfig);
-        } catch (e) {
-          console.warn("Could not auto-generate report on finish:", e);
-        }
+      try {
+        active.requestsReport = await generateRequestsReportWithAI(active, aiConfig);
+      } catch (e) {
+        console.warn("Fallback heuristic report on finish:", e);
+        active.requestsReport = generateHeuristicRequestsReport(active);
       }
 
-      const existingIdx = meetings.findIndex(m => m.id === active.id);
-      if (existingIdx !== -1) {
-        meetings[existingIdx] = active;
-      } else {
-        meetings.unshift(active);
-      }
+      meetings = upsertMeetingIntoHistory(meetings, active);
 
       await chrome.storage.local.set({
         [STORAGE_KEYS.MEETINGS]: meetings,
@@ -276,13 +340,20 @@ async function handleMessage(message, sender) {
       const report = await generateRequestsReportWithAI(target, aiConfig);
       target.requestsReport = report;
 
-      // Also merge suggested highlights if any
-      if (Array.isArray(report.suggestedHighlights) && report.suggestedHighlights.length > 0 && (!target.highlights || target.highlights.length === 0)) {
+      if (
+        Array.isArray(report.suggestedHighlights) &&
+        report.suggestedHighlights.length > 0 &&
+        (!target.highlights || target.highlights.length === 0)
+      ) {
         target.highlights = report.suggestedHighlights;
       }
 
       if (isFromActive) {
-        await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_MEETING]: target });
+        upsertMeetingIntoHistory(meetings, target);
+        await chrome.storage.local.set({
+          [STORAGE_KEYS.ACTIVE_MEETING]: target,
+          [STORAGE_KEYS.MEETINGS]: meetings
+        });
       } else {
         await chrome.storage.local.set({ [STORAGE_KEYS.MEETINGS]: meetings });
       }
@@ -297,7 +368,6 @@ async function handleMessage(message, sender) {
     }
 
     case "LAUNCH_GEMINI_OAUTH": {
-      // Supports either chrome.identity.getAuthToken or launchWebAuthFlow with user-provided Client ID
       const clientId = message.clientId?.trim();
       if (clientId) {
         const redirectUri = chrome.identity.getRedirectURL("oauth2");
@@ -317,7 +387,6 @@ async function handleMessage(message, sender) {
         }
         return { accessToken, redirectUri };
       } else {
-        // Attempt native Chrome profile identity token
         const tokenResult = await chrome.identity.getAuthToken({ interactive: true });
         const token = typeof tokenResult === "string" ? tokenResult : tokenResult?.token;
         if (!token) {
@@ -486,7 +555,7 @@ function parseTactiqTxtFile(rawText, filename = "Reunión Importada") {
     startedDisplay,
     durationMinutes: parseInt(durationDisplay, 10) || 30,
     durationDisplay,
-    sourceUrl: "https://teams.microsoft.com/imported",
+    sourceUrl: "https://teams.cloud.microsoft/imported",
     participants: participants.length > 0
       ? participants
       : Array.from(new Set(transcript.map(t => t.speaker))),
