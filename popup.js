@@ -16,10 +16,10 @@ let state = {
 };
 
 const DEMO_PHRASES = [
-  { speaker: "Carlos Mendoza", text: "Articulando esta reunión dado que el ciclo actual en la nube termina mañana." },
-  { speaker: "Alejandro Morales", text: "Por favor Martín, hoy antes de las 15:00 necesitamos que quede creada la solicitud de transferencia en el portal." },
-  { speaker: "Martín Castro", text: "Perfecto, enviaremos los dos enlaces iniciales de autorización para la aceptación de Roberto Guzmán." },
-  { speaker: "Roberto Guzmán", text: "De acuerdo, mañana a las 12:00 hrs hacemos la aprobación junto con el equipo técnico." }
+  { speaker: "Daniel Francisco Zamora Galindo", text: "Articulando esta reunión dado que nuestros créditos en Azure terminan mañana." },
+  { speaker: "Christian Jovanny Segura Urzua", text: "Por favor Luis, hoy antes de las 15:00 necesitamos que quede creado el Transfer Request en el portal." },
+  { speaker: "Rojas, Luis", text: "Perfecto, enviaremos los dos links iniciales y luego el link de Gigabit para aceptación de José Cruces." },
+  { speaker: "Jose Rodrigo Cruces Aguilera", text: "De acuerdo, mañana a las 12:00 hrs hacemos la aprobación junto con Diego de Tibit." }
 ];
 let demoIndex = 0;
 
