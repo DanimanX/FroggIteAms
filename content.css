@@ -142,6 +142,16 @@
   border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
+.frogg-mode-banner {
+  background: rgba(79, 70, 229, 0.16);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
 .frogg-stream {
   height: 220px;
   overflow-y: auto;

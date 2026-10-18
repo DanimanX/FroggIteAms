@@ -16,7 +16,7 @@ const STORAGE_KEYS = {
   AI_CONFIG: "froggiteams_ai_config"
 };
 
-// Initialize storage with sample meeting on install if empty
+// Initialize storage with sample meeting on install if empty, and inject into any open Teams tabs
 chrome.runtime.onInstalled.addListener(async () => {
   const data = await chrome.storage.local.get([
     STORAGE_KEYS.MEETINGS,
@@ -33,6 +33,32 @@ chrome.runtime.onInstalled.addListener(async () => {
     await chrome.storage.local.set({
       [STORAGE_KEYS.AI_CONFIG]: DEFAULT_AI_CONFIG
     });
+  }
+
+  // Inject into already-open Microsoft Teams tabs (including https://teams.cloud.microsoft/*)
+  try {
+    const tabs = await chrome.tabs.query({
+      url: [
+        "https://teams.cloud.microsoft/*",
+        "https://*.cloud.microsoft/*",
+        "https://teams.microsoft.com/*",
+        "https://*.teams.microsoft.com/*",
+        "https://teams.live.com/*"
+      ]
+    });
+    for (const tab of tabs) {
+      if (!tab.id) continue;
+      await chrome.scripting.insertCSS({
+        target: { tabId: tab.id, allFrames: false },
+        files: ["content.css"]
+      }).catch(() => {});
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        files: ["content.js"]
+      }).catch(() => {});
+    }
+  } catch (e) {
+    console.warn("[FroggIteAms] Auto-inject on install warning:", e);
   }
 });
 
