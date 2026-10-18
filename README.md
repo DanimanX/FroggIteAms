@@ -14,6 +14,23 @@
 
 ---
 
+<p align="center">
+  FroggIteAms is free and open source. If it earns a place in your workflow and you
+  feel like saying thanks, you can buy me a coffee — completely optional.
+</p>
+
+<p align="center">
+  <a href="https://paypal.me/DanimanX?locale.x=en_US&amp;country.x=CL">
+    <img src="https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&amp;logoColor=white&amp;style=for-the-badge" alt="Donate with PayPal">
+  </a>
+</p>
+
+<p align="center">
+  <sub><a href="https://paypal.me/DanimanX?locale.x=en_US&amp;country.x=CL">paypal.me/DanimanX</a></sub>
+</p>
+
+---
+
 ## ✨ Key Features
 
 1. **🎙️ Real-Time Transcription in Microsoft Teams (`teams.cloud.microsoft`, `teams.microsoft.com`, `teams.live.com`)**
@@ -31,7 +48,7 @@
 3. **📊 Tactiq-Style Meeting History Hub (`Popup` + `Full Dashboard`)**
    - Instant search by meeting title, participant, or spoken keyword.
    - Speaker filter chips and interactive **Highlights** manager.
-   - Includes a pre-loaded sample meeting and supports importing existing `.txt` transcripts.
+   - Supports importing existing `.txt` transcripts.
 
 4. **📄 Exact `.TXT` & `.CSV` Exports**
    - **`.TXT` Export**: Matches the exact Tactiq structure (`# Title`, `Meeting started:`, `Duration:`, `Participants:`, `## Highlights` with `> MM:SS Speaker: Text`, and `## Transcript` with `MM:SS Speaker: Text`).
@@ -67,5 +84,5 @@
 
 Every push to `main` (and any version tag `v*`) triggers the [`.github/workflows/build-extension.yml`](.github/workflows/build-extension.yml) workflow, which:
 - Validates the extension `manifest.json` and all ES module scripts (`background.js`, `content.js`, `popup.js`, `dashboard.js`).
-- Packages the production-ready Chrome Extension bundle (`froggiteams-chrome-extension.zip` and unpacked `dist/` directory).
+- Packages the production-ready Chrome Extension bundle (`froggiteams-chrome-extension.zip` and `.crx`).
 - Uploads the compiled Chrome plugin as a downloadable GitHub Actions artifact (and attaches it automatically to GitHub Releases).
