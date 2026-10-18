@@ -7,19 +7,19 @@
 //
 // Key Capabilities:
 // 1. ZERO DATA LOSS: Continuously syncs every spoken line to permanent history + triggers FINISH_MEETING when leaving call or closing window.
-// 2. RELIABLE AUTO-CC ACTIVATION: Retries enabling MS Teams Live Captions with true PointerEvent/MouseEvent sequence and sets Spoken Language to Español (México) (es-MX).
+// 2. RELIABLE AUTO-CC ACTIVATION: Finds the call toolbar "Más" / "More" button (near Hangup/Leave), opens "Idioma y voz" / "Language and speech" via hover + pointer + keyboard events, clicks "Mostrar subtítulos en vivo", and selects "Español (México)".
 // 3. STRICT CALL DETECTION & CHAT ISOLATION: Only activates inside an active call and strictly ignores group chats/channel messages.
 
 (function initFroggIteAmsContentScript() {
   const isTopFrame = window === window.top;
-  if (window.__FROGGITEAMS_INITIALIZED_V4__) return;
-  window.__FROGGITEAMS_INITIALIZED_V4__ = true;
+  if (window.__FROGGITEAMS_INITIALIZED_V5__) return;
+  window.__FROGGITEAMS_INITIALIZED_V5__ = true;
 
   const SUPPORTED_CC_LANGUAGES = [
     {
       code: "es-MX",
       label: "🇲🇽 Español (México)",
-      teamsKeywords: ["español (méxico)", "spanish (mexico)", "es-mx"]
+      teamsKeywords: ["español (méxico)", "español (mexico)", "spanish (mexico)", "es-mx"]
     },
     {
       code: "es-ES",
@@ -34,7 +34,7 @@
     {
       code: "en-US",
       label: "🇺🇸 English (US)",
-      teamsKeywords: ["english (united states)", "inglés (estados unidos)", "en-us"]
+      teamsKeywords: ["english (united states)", "english (u.s.)", "inglés (estados unidos)", "en-us"]
     },
     {
       code: "pt-BR",
@@ -73,7 +73,6 @@
     updateWidgetVisibility(false);
   }
 
-  // Ensure if the user closes the tab or window during a meeting, we finalize the meeting in storage
   window.addEventListener("beforeunload", () => {
     if (inActiveCall && currentEntries.length > 0) {
       try {
@@ -100,7 +99,6 @@
     const nowInCall = checkIsInActiveTeamsMeeting();
 
     if (nowInCall && !inActiveCall) {
-      // Entered an active meeting!
       inActiveCall = true;
       autoCcAttempts = 0;
       lastAutoCcAttemptMs = 0;
@@ -118,12 +116,10 @@
         });
       }
     } else if (!nowInCall && inActiveCall) {
-      // Meeting just closed / ended!
       inActiveCall = false;
       autoCcAttempts = 0;
       if (isTopFrame) {
         updateWidgetVisibility(false);
-        // Finalize meeting in background so AI report is generated and it is marked completed in History
         chrome.runtime.sendMessage({ type: "FINISH_MEETING" });
       }
     }
@@ -133,14 +129,12 @@
     const someoneSpeaking = detectActiveSpeakerOnStage();
     const captionsVisible = areTeamsCaptionsCurrentlyOpen();
 
-    // Auto-enable Live Captions (CC) if not open yet:
-    // Retries up to 6 times (every 4.5 seconds) after joining call OR immediately when someone speaks
     const now = Date.now();
     if (
       !captionsVisible &&
       !autoCcEnablingInProgress &&
-      autoCcAttempts < 6 &&
-      (now - lastAutoCcAttemptMs > 4500 || (someoneSpeaking && autoCcAttempts < 3))
+      autoCcAttempts < 5 &&
+      (now - lastAutoCcAttemptMs > 5000 || (someoneSpeaking && autoCcAttempts < 2))
     ) {
       autoCcAttempts++;
       lastAutoCcAttemptMs = now;
@@ -151,19 +145,48 @@
   }, 650);
 
   /**
-   * Dispatches a complete sequence of Pointer & Mouse events so Fluent UI v9 / React 18
-   * in https://teams.cloud.microsoft/ reliably opens menus and toggles buttons.
+   * Dispatches real coordinates Pointer, Mouse, Hover, and Keyboard events so Fluent UI v9 / React 18
+   * menus and submenus in https://teams.cloud.microsoft/ reliably open.
    */
-  function simulateFluentClick(el) {
+  function simulateFluentInteraction(el, includeSubmenuHover = false) {
     if (!el) return false;
     try {
+      const rect = el.getBoundingClientRect();
+      const clientX = rect.left + rect.width / 2;
+      const clientY = rect.top + rect.height / 2;
+      const evOpts = {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        view: window,
+        clientX,
+        clientY,
+        buttons: 1
+      };
+
       el.focus?.();
-      const opts = { bubbles: true, cancelable: true, view: window, buttons: 1 };
-      el.dispatchEvent(new PointerEvent("pointerdown", opts));
-      el.dispatchEvent(new MouseEvent("mousedown", opts));
-      el.dispatchEvent(new PointerEvent("pointerup", opts));
-      el.dispatchEvent(new MouseEvent("mouseup", opts));
+      el.dispatchEvent(new PointerEvent("pointerover", evOpts));
+      el.dispatchEvent(new MouseEvent("mouseover", evOpts));
+      el.dispatchEvent(new PointerEvent("pointerenter", evOpts));
+      el.dispatchEvent(new MouseEvent("mouseenter", evOpts));
+      el.dispatchEvent(new PointerEvent("pointerdown", evOpts));
+      el.dispatchEvent(new MouseEvent("mousedown", evOpts));
+      el.dispatchEvent(new PointerEvent("pointerup", evOpts));
+      el.dispatchEvent(new MouseEvent("mouseup", evOpts));
       el.click();
+
+      if (includeSubmenuHover) {
+        // Fluent UI v9 nested MenuTrigger also responds to ArrowRight or Enter when focused
+        el.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "ArrowRight",
+            code: "ArrowRight",
+            keyCode: 39,
+            bubbles: true,
+            cancelable: true
+          })
+        );
+      }
       return true;
     } catch {
       try {
@@ -175,29 +198,39 @@
     }
   }
 
-  /**
-   * Strictly checks if the current Teams view is an ACTIVE meeting/call
-   */
-  function checkIsInActiveTeamsMeeting() {
-    const callIndicators = [
+  function findHangupButton() {
+    const selectors = [
       '[data-tid="hangup-button"]',
       '[data-tid="call-hangup"]',
+      'button[id*="hangup" i]',
+      'button[data-tid*="hangup" i]',
+      'button[aria-label*="Salir" i]',
+      'button[aria-label*="Colgar" i]',
+      'button[aria-label*="Leave" i]'
+    ];
+    for (const sel of selectors) {
+      const candidates = querySelectorAllDeep(sel);
+      for (const c of candidates) {
+        if (c.closest?.("#froggiteams-widget-root")) continue;
+        if (isElementVisible(c)) return c;
+      }
+    }
+    return null;
+  }
+
+  function checkIsInActiveTeamsMeeting() {
+    if (findHangupButton()) return true;
+
+    const otherCallIndicators = [
       '[data-tid="calling-unified-bar"]',
       '[data-tid="call-stage"]',
       '[data-tid="modern-calling-screen"]',
       '[data-tid="closed-captions-renderer"]',
-      '[data-tid="closed-caption-v2-window-wrapper"]',
-      'button[id*="hangup" i]',
-      'button[data-tid*="hangup" i]',
-      'button[aria-label*="Salir" i][id*="hangup" i]',
-      'button[aria-label*="Leave" i][id*="hangup" i]'
+      '[data-tid="closed-caption-v2-window-wrapper"]'
     ];
-
-    for (const sel of callIndicators) {
+    for (const sel of otherCallIndicators) {
       const el = querySelectorDeepFirst(sel);
-      if (el && isElementVisible(el)) {
-        return true;
-      }
+      if (el && isElementVisible(el)) return true;
     }
     return false;
   }
@@ -208,7 +241,9 @@
       '[data-tid="closed-caption-v2-window-wrapper"]',
       '[data-tid="closed-caption-item"]',
       '[data-tid="call-transcript-panel"]',
-      '[data-tid*="closed-caption-v2"]'
+      '[data-tid*="closed-caption-v2"]',
+      '[aria-label*="Subtítulos en vivo" i][role="region"]',
+      '[aria-label*="Live captions" i][role="region"]'
     ];
     for (const sel of captionWrapperSelectors) {
       const el = querySelectorDeepFirst(sel);
@@ -256,7 +291,7 @@
             </div>
           </div>
           <div class="frogg-header-actions">
-            <button class="frogg-icon-btn" id="frogg-btn-captions" title="Forzar activación de Subtítulos en Vivo (CC) en Teams">CC</button>
+            <button class="frogg-icon-btn" id="frogg-btn-captions" title="Activar Subtítulos en Vivo (CC) en Teams">CC</button>
             <button class="frogg-icon-btn" id="frogg-btn-mic" title="Respaldo Micrófono Local (WebSpeech)">🎙️</button>
             <button class="frogg-icon-btn" id="frogg-btn-dashboard" title="Abrir Menú Histórico y Reportes (Tactiq Hub)">📊</button>
             <button class="frogg-icon-btn" id="frogg-btn-minimize" title="Minimizar/Expandir">_</button>
@@ -274,17 +309,17 @@
             <select id="frogg-cc-lang-select" class="frogg-lang-select">
               ${langOptionsHtml}
             </select>
-            <button id="frogg-btn-apply-lang" class="frogg-btn-apply-lang" title="Aplicar idioma de subtítulos en MS Teams">Aplicar</button>
+            <button id="frogg-btn-apply-lang" class="frogg-btn-apply-lang" title="Activar CC y aplicar idioma en MS Teams">Aplicar</button>
           </div>
 
           <div class="frogg-mode-banner" id="frogg-mode-banner">
-            <span>💾 <strong>Auto-guardado en tiempo real:</strong> No perderás datos al cerrar la reunión. Activando CC en <strong>Español (México)</strong>...</span>
+            <span>💾 <strong>Auto-guardado activo:</strong> Tus datos se guardan frase a frase. Idioma CC: <strong>Español (México)</strong>.</span>
           </div>
 
           <div class="frogg-stream" id="frogg-stream">
             <div class="frogg-empty" id="frogg-empty">
-              <p>🐸 <strong>Auto-activando Subtítulos (CC)...</strong></p>
-              <p class="frogg-hint">Toda frase se guarda al instante en el historial de reuniones aunque cierres la llamada.</p>
+              <p>🐸 <strong>Reunión detectada en MS Teams</strong></p>
+              <p class="frogg-hint">Activando Subtítulos en vivo (CC) automáticamente...</p>
             </div>
           </div>
 
@@ -334,7 +369,7 @@
       const sel = document.getElementById("frogg-cc-lang-select");
       selectedCcLang = sel?.value || "es-MX";
       chrome.storage.local.set({ froggiteams_cc_lang: selectedCcLang });
-      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true);
+      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true, true);
     });
 
     document.getElementById("frogg-btn-minimize").addEventListener("click", () => {
@@ -348,7 +383,7 @@
     });
 
     document.getElementById("frogg-btn-captions").addEventListener("click", () => {
-      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true);
+      autoEnableTeamsLiveCaptionsSequence(selectedCcLang, true, true);
     });
 
     document.getElementById("frogg-btn-pause").addEventListener("click", (e) => {
@@ -398,6 +433,284 @@
     if (!text) return;
     pushCaptionLine(speaker, text, false);
     textInput.value = "";
+  }
+
+  /**
+   * Finds the exact "More (...)" button inside the active MS Teams call control bar
+   * by locating the toolbar that contains the Hangup/Leave button (avoiding sidebar/app-bar "..." buttons).
+   */
+  function findCallToolbarMoreButton() {
+    const hangup = findHangupButton();
+
+    // 1. Search inside the same toolbar container as the Hangup button first
+    if (hangup) {
+      let toolbar =
+        hangup.closest('[role="toolbar"], [data-tid*="calling" i], [data-tid*="unified-bar" i]') ||
+        hangup.parentElement?.parentElement?.parentElement;
+
+      if (toolbar) {
+        const toolbarButtons = Array.from(toolbar.querySelectorAll("button, [role='button']"));
+        const moreInToolbar = toolbarButtons.find((btn) => {
+          if (btn === hangup || !isElementVisible(btn)) return false;
+          const desc = [
+            btn.id || "",
+            btn.getAttribute("data-tid") || "",
+            btn.getAttribute("aria-label") || "",
+            btn.getAttribute("title") || "",
+            btn.textContent || ""
+          ]
+            .join(" ")
+            .toLowerCase();
+          return (
+            desc.includes("more") ||
+            desc.includes("más") ||
+            desc.includes("mas ") ||
+            desc.includes("showmore") ||
+            desc.includes("button-more")
+          );
+        });
+        if (moreInToolbar) return moreInToolbar;
+      }
+    }
+
+    // 2. Fallback: search globally for explicit calling More button IDs/data-tids
+    const explicitSelectors = [
+      '#callingButtons-showMoreBtn',
+      '[data-tid="callingButtons-showMoreBtn"]',
+      '[data-tid="button-more-menu"]',
+      '[data-tid="calling-unified-bar-more"]',
+      'button[aria-label="Más" i]',
+      'button[aria-label="Más acciones" i]',
+      'button[aria-label="More" i]',
+      'button[aria-label="More actions" i]'
+    ];
+    for (const sel of explicitSelectors) {
+      const candidates = querySelectorAllDeep(sel);
+      const visible = candidates.find(
+        (el) => !el.closest?.("#froggiteams-widget-root") && isElementVisible(el)
+      );
+      if (visible) return visible;
+    }
+
+    return null;
+  }
+
+  /**
+   * Searches currently visible popup menus (`[role="menu"]`, `[role="menuitem"]`, etc.)
+   * for any item matching the given keywords.
+   */
+  function findMenuItemByKeywords(keywords) {
+    const items = querySelectorAllDeep(
+      '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="menu"] button, [data-tid*="caption" i], [data-tid*="speech" i]'
+    );
+    return items.find((el) => {
+      if (el.closest?.("#froggiteams-widget-root") || !isElementVisible(el)) return false;
+      const text = [
+        el.id || "",
+        el.getAttribute("data-tid") || "",
+        el.getAttribute("aria-label") || "",
+        el.textContent || ""
+      ]
+        .join(" ")
+        .toLowerCase();
+      return keywords.some((kw) => text.includes(kw));
+    });
+  }
+
+  /**
+   * Robust multi-step navigation for MS Teams v2 (https://teams.cloud.microsoft/)
+   * 1. Wakes up the call toolbar if auto-hidden
+   * 2. Clicks the call toolbar's "Más (...)" button
+   * 3. Opens "Idioma y voz" / "Language and speech" (if nested)
+   * 4. Clicks "Mostrar subtítulos en vivo" / "Turn on live captions"
+   * 5. Sets Spoken Language to Español (México) (or user-selected language)
+   */
+  async function autoEnableTeamsLiveCaptionsSequence(
+    langCode = "es-MX",
+    forceLanguageChange = false,
+    manualTrigger = false
+  ) {
+    if (autoCcEnablingInProgress) return;
+    autoCcEnablingInProgress = true;
+
+    const banner = document.getElementById("frogg-mode-banner");
+    const langObj =
+      SUPPORTED_CC_LANGUAGES.find((l) => l.code === langCode) || SUPPORTED_CC_LANGUAGES[0];
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    try {
+      if (banner && manualTrigger) {
+        banner.innerHTML = `<span style="color:#a7f3d0;">⏳ Abriendo menú de MS Teams para activar <strong>Subtítulos en vivo (${langObj.label})</strong>...</span>`;
+      }
+
+      // Wake up call control bar by dispatching mousemove on the call stage
+      const stage =
+        querySelectorDeepFirst('[data-tid="call-stage"], [data-tid="modern-calling-screen"]') ||
+        document.body;
+      stage.dispatchEvent(
+        new MouseEvent("mousemove", { bubbles: true, clientX: 400, clientY: 200 })
+      );
+      await sleep(200);
+
+      // Step 1: Turn on Live Captions if not already open
+      if (!areTeamsCaptionsCurrentlyOpen()) {
+        // Check if "Subtítulos en vivo" / "Live captions" button is directly on the bar
+        let directCaptionBtn = findMenuItemByKeywords([
+          "mostrar subtítulos en vivo",
+          "activar subtítulos en vivo",
+          "turn on live captions",
+          "show live captions",
+          "livecaptionsbutton",
+          "closed-captions-button"
+        ]);
+
+        if (directCaptionBtn) {
+          simulateFluentInteraction(directCaptionBtn);
+          await sleep(700);
+        } else {
+          // Find the Call Toolbar "Más (...)" button
+          const moreBtn = findCallToolbarMoreButton();
+          if (moreBtn) {
+            // Only click More if a menu isn't already open
+            const existingMenu = findMenuItemByKeywords([
+              "idioma y voz",
+              "language and speech",
+              "subtítulos",
+              "captions"
+            ]);
+            if (!existingMenu) {
+              simulateFluentInteraction(moreBtn);
+              await sleep(550);
+            }
+
+            // Check if "Mostrar subtítulos en vivo" is directly in the More menu
+            let captionItem = findMenuItemByKeywords([
+              "mostrar subtítulos en vivo",
+              "activar subtítulos en vivo",
+              "subtítulos en vivo",
+              "turn on live captions",
+              "show live captions",
+              "live captions"
+            ]);
+
+            // If not directly visible, open the "Idioma y voz" / "Language and speech" submenu
+            if (!captionItem) {
+              const langAndSpeechItem = findMenuItemByKeywords([
+                "idioma y voz",
+                "language and speech",
+                "speech-and-language",
+                "language-and-speech",
+                "voz e idioma"
+              ]);
+
+              if (langAndSpeechItem) {
+                simulateFluentInteraction(langAndSpeechItem, true);
+                await sleep(550);
+
+                captionItem = findMenuItemByKeywords([
+                  "mostrar subtítulos en vivo",
+                  "activar subtítulos en vivo",
+                  "subtítulos en vivo",
+                  "turn on live captions",
+                  "show live captions",
+                  "live captions",
+                  "subtítulos",
+                  "captions"
+                ]);
+              }
+            }
+
+            if (captionItem) {
+              simulateFluentInteraction(captionItem);
+              await sleep(900);
+            }
+          }
+        }
+      }
+
+      // Step 2: Handle Spoken Language modal (if Teams shows "What language is everyone speaking?" or user clicked "Aplicar")
+      if (forceLanguageChange || areTeamsCaptionsCurrentlyOpen()) {
+        if (forceLanguageChange && areTeamsCaptionsCurrentlyOpen()) {
+          const allBtns = querySelectorAllDeep("button, [role='button'], [role='menuitem']");
+          const settingsBtn = allBtns.find((el) => {
+            if (!isElementVisible(el) || el.closest?.("#froggiteams-widget-root")) return false;
+            const txt = [
+              el.getAttribute("data-tid") || "",
+              el.getAttribute("aria-label") || "",
+              el.getAttribute("title") || ""
+            ]
+              .join(" ")
+              .toLowerCase();
+            return (
+              txt.includes("configuración de subtítulos") ||
+              txt.includes("caption settings") ||
+              txt.includes("cambiar idioma hablado") ||
+              txt.includes("change spoken language") ||
+              txt.includes("closed-caption-settings")
+            );
+          });
+
+          if (settingsBtn) {
+            simulateFluentInteraction(settingsBtn);
+            await sleep(450);
+
+            const spokenLangItem = findMenuItemByKeywords([
+              "idioma hablado",
+              "spoken language"
+            ]);
+            if (spokenLangItem) {
+              simulateFluentInteraction(spokenLangItem);
+              await sleep(450);
+            }
+          }
+        }
+
+        // If a dialog with a language combobox is open, select Español (México) (or chosen language)
+        const dialogCombo = querySelectorDeepFirst(
+          '[role="dialog"] [role="combobox"], [role="dialog"] button[aria-haspopup="listbox"], [data-tid*="spoken-language" i]'
+        );
+        if (dialogCombo && isElementVisible(dialogCombo)) {
+          simulateFluentInteraction(dialogCombo);
+          await sleep(450);
+        }
+
+        const langOpt = findMenuItemByKeywords(langObj.teamsKeywords);
+        if (langOpt) {
+          simulateFluentInteraction(langOpt);
+          await sleep(350);
+        }
+
+        const allDialogBtns = querySelectorAllDeep('[role="dialog"] button, button[data-tid*="confirm" i]');
+        const confirmBtn = allDialogBtns.find((b) => {
+          if (!isElementVisible(b)) return false;
+          const t = (b.textContent || b.getAttribute("aria-label") || "").toLowerCase();
+          return (
+            t.includes("confirmar") ||
+            t.includes("actualizar") ||
+            t.includes("guardar") ||
+            t.includes("confirm") ||
+            t.includes("update") ||
+            t.includes("save")
+          );
+        });
+        if (confirmBtn) {
+          simulateFluentInteraction(confirmBtn);
+          await sleep(300);
+        }
+      }
+
+      if (areTeamsCaptionsCurrentlyOpen()) {
+        if (banner) {
+          banner.innerHTML = `<span style="color:#34d399;">✅ <strong>Subtítulos en vivo activos (${langObj.label})</strong>. Capturando a todos los asistentes y auto-guardando.</span>`;
+        }
+      } else if (banner) {
+        banner.innerHTML = `<span style="color:#fde68a;">⚠️ Si tu organización oculta el botón automático en Teams, haz clic en la barra de Teams en <strong>Más (...) → Idioma y voz → Mostrar subtítulos en vivo</strong> (o pulsa <strong>🎙️</strong> arriba para transcribir por micrófono).</span>`;
+      }
+    } catch (e) {
+      console.warn("[FroggIteAms Auto-CC]", e);
+    } finally {
+      autoCcEnablingInProgress = false;
+    }
   }
 
   function isInsideChatOrChannelPane(node) {
@@ -581,174 +894,6 @@
       return true;
     }
     return false;
-  }
-
-  /**
-   * Robust multi-step navigation for MS Teams v2 (https://teams.cloud.microsoft/)
-   * Uses `simulateFluentClick` (PointerDown -> MouseDown -> PointerUp -> MouseUp -> Click)
-   * so Fluent UI v9 menus open reliably, enables Live Captions, and sets Spoken Language to Español (México).
-   */
-  async function autoEnableTeamsLiveCaptionsSequence(
-    langCode = "es-MX",
-    forceLanguageChange = false
-  ) {
-    if (autoCcEnablingInProgress) return;
-    autoCcEnablingInProgress = true;
-
-    const banner = document.getElementById("frogg-mode-banner");
-    const langObj =
-      SUPPORTED_CC_LANGUAGES.find((l) => l.code === langCode) || SUPPORTED_CC_LANGUAGES[0];
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-    try {
-      const findElementByAttrOrText = (keywords) => {
-        const candidates = querySelectorAllDeep(
-          'button, [role="menuitem"], [role="menuitemcheckbox"], [role="option"], [role="radio"], [data-tid]'
-        );
-        return candidates.find((el) => {
-          if (el.closest?.("#froggiteams-widget-root") || !isElementVisible(el)) return false;
-          const haystack = [
-            el.id || "",
-            el.getAttribute("data-tid") || "",
-            el.getAttribute("aria-label") || "",
-            el.getAttribute("title") || "",
-            el.textContent || ""
-          ]
-            .join(" ")
-            .toLowerCase();
-          return keywords.some((kw) => haystack.includes(kw));
-        });
-      };
-
-      // Step 1: If captions are not currently open, turn them on
-      if (!areTeamsCaptionsCurrentlyOpen()) {
-        // Check if a direct "LiveCaptions" button is already on the toolbar
-        let directCaptionBtn = findElementByAttrOrText([
-          "livecaptionsbutton",
-          "closed-captions-button",
-          "turn on live captions",
-          "activar subtítulos en vivo",
-          "mostrar subtítulos en vivo"
-        ]);
-
-        if (directCaptionBtn) {
-          simulateFluentClick(directCaptionBtn);
-          await sleep(700);
-        } else {
-          // Find the "More" (...) button in the Teams calling bar
-          const moreBtn = findElementByAttrOrText([
-            "callingbuttons-showmorebtn",
-            "calling-unified-bar-more",
-            "more-button",
-            "más acciones",
-            "more actions",
-            "más opciones"
-          ]);
-
-          if (moreBtn) {
-            simulateFluentClick(moreBtn);
-            await sleep(500);
-
-            // In Teams v2 (teams.cloud.microsoft), Live Captions is nested under "Idioma y voz" / "Language and speech"
-            const langSpeechMenu = findElementByAttrOrText([
-              "idioma y voz",
-              "language and speech",
-              "speech-and-language",
-              "language-and-speech"
-            ]);
-
-            if (langSpeechMenu) {
-              simulateFluentClick(langSpeechMenu);
-              await sleep(450);
-            }
-
-            // Now find "Turn on live captions" / "Mostrar subtítulos en vivo" / "Activar subtítulos en vivo"
-            const captionMenuItem = findElementByAttrOrText([
-              "mostrar subtítulos en vivo",
-              "activar subtítulos en vivo",
-              "subtítulos en vivo",
-              "turn on live captions",
-              "show live captions",
-              "live captions",
-              "livecaptionsbutton",
-              "closed-captions"
-            ]);
-
-            if (captionMenuItem) {
-              simulateFluentClick(captionMenuItem);
-              await sleep(800);
-            }
-          }
-        }
-      }
-
-      // Step 2: Handle the "Spoken language" modal (if Teams pops it up on first caption start)
-      // or explicitly change language if the user clicked "Aplicar"
-      const spokenLangDialogOrSettings = async () => {
-        if (forceLanguageChange && areTeamsCaptionsCurrentlyOpen()) {
-          const settingsBtn = findElementByAttrOrText([
-            "configuración de subtítulos",
-            "caption settings",
-            "cambiar idioma hablado",
-            "change spoken language",
-            "closed-caption-settings"
-          ]);
-          if (settingsBtn) {
-            simulateFluentClick(settingsBtn);
-            await sleep(450);
-            const spokenLangItem = findElementByAttrOrText([
-              "idioma hablado",
-              "spoken language"
-            ]);
-            if (spokenLangItem) {
-              simulateFluentClick(spokenLangItem);
-              await sleep(450);
-            }
-          }
-        }
-
-        // Check if a language combobox/dropdown is open or visible inside a dialog
-        const combobox = querySelectorDeepFirst(
-          '[role="dialog"] [role="combobox"], [role="dialog"] button[aria-haspopup="listbox"]'
-        );
-        if (combobox && isElementVisible(combobox)) {
-          simulateFluentClick(combobox);
-          await sleep(400);
-        }
-
-        const langOption = findElementByAttrOrText(langObj.teamsKeywords);
-        if (langOption) {
-          simulateFluentClick(langOption);
-          await sleep(350);
-        }
-
-        const confirmBtn = findElementByAttrOrText([
-          "confirmar",
-          "actualizar",
-          "guardar",
-          "confirm",
-          "update",
-          "save"
-        ]);
-        if (confirmBtn) {
-          simulateFluentClick(confirmBtn);
-        }
-      };
-
-      await spokenLangDialogOrSettings();
-
-      if (areTeamsCaptionsCurrentlyOpen()) {
-        if (banner) {
-          banner.innerHTML = `<span style="color:#34d399;">✅ Subtítulos activos en <strong>${langObj.label}</strong> y auto-guardando cada frase en tiempo real.</span>`;
-        }
-      } else if (banner) {
-        banner.innerHTML = `<span style="color:#fde68a;">🔄 Intentando activar CC (${autoCcAttempts}/6)... También puedes pulsar <strong>CC</strong> arriba o <strong>Más (...) → Idioma y voz → Mostrar subtítulos en vivo</strong>.</span>`;
-      }
-    } catch (e) {
-      console.warn("[FroggIteAms Auto-CC]", e);
-    } finally {
-      autoCcEnablingInProgress = false;
-    }
   }
 
   function pushCaptionLine(speaker, text, isUpdate = false) {
