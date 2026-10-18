@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FroggIteAms - MS Teams AI Transcriber</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Top Header -->
+    <header class="popup-header">
+      <div class="brand-wrap">
+        <img src="assets/icon-128.png" alt="FroggIteAms Logo" class="brand-icon" />
+        <div>
+          <h1 class="brand-title">FroggIteAms</h1>
+          <p class="brand-subtitle">Chrono Teams Live Transcriber</p>
+        </div>
+      </div>
+      <button id="btn-open-dashboard" class="btn-hub" title="Abrir Centro Completo (Estilo Tactiq)">
+        📊 Panel Completo
+      </button>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="history">🗂️ Reuniones</button>
+      <button class="tab-btn" data-tab="live">🎙️ En Vivo</button>
+      <button class="tab-btn" data-tab="ai">🤖 Token IA / OAuth</button>
+    </nav>
+
+    <!-- TAB 1: Meeting History & Quick Exports -->
+    <section class="tab-panel active" id="tab-history">
+      <div class="toolbar-row">
+        <input type="search" id="search-meetings" class="search-input" placeholder="Buscar reunión o participante..." />
+        <label for="import-txt-input" class="btn-icon-label" title="Importar archivo TXT estilo Tactiq">📂</label>
+        <input type="file" id="import-txt-input" accept=".txt" hidden />
+      </div>
+
+      <div id="meetings-list" class="meetings-list"></div>
+    </section>
+
+    <!-- TAB 2: Live Session & Simulator -->
+    <section class="tab-panel" id="tab-live">
+      <div class="live-card">
+        <div class="live-status-header">
+          <span class="status-pill" id="live-status-pill">Listo para capturar en MS Teams</span>
+          <span class="live-count" id="live-lines-count">0 líneas</span>
+        </div>
+        <p class="live-help">
+          Abre <strong>teams.microsoft.com</strong> en una reunión con subtítulos activos o prueba una simulación en tiempo real aquí mismo:
+        </p>
+        <div class="live-controls">
+          <button id="btn-simulate-line" class="btn-secondary">⚡ Simular Frase en Vivo</button>
+          <button id="btn-finish-live" class="btn-primary">💾 Finalizar y Analizar</button>
+        </div>
+        <div id="live-preview-box" class="live-preview-box"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: AI Provider Configuration (Gemini OAuth/API, DeepSeek, OpenAI) -->
+    <section class="tab-panel" id="tab-ai">
+      <div class="ai-config-card">
+        <label class="field-label">Proveedor de IA Activo</label>
+        <select id="ai-provider-select" class="select-input">
+          <option value="gemini">Google Gemini (OAuth 2.0 o API Key)</option>
+          <option value="deepseek">DeepSeek (API Token - deepseek-chat)</option>
+          <option value="openai">OpenAI (API Token - GPT-4o mini)</option>
+          <option value="custom">Groq / Otro Compatible OpenAI</option>
+          <option value="local">Motor Heurístico Local (Sin Token)</option>
+        </select>
+
+        <!-- Gemini Section -->
+        <div class="provider-box" id="box-gemini">
+          <div class="radio-group">
+            <label><input type="radio" name="gemini-mode" value="apikey" checked /> API Key (AI Studio)</label>
+            <label><input type="radio" name="gemini-mode" value="oauth" /> Google OAuth 2.0 Token</label>
+          </div>
+
+          <div id="gemini-apikey-fields">
+            <label class="field-label">Gemini API Key</label>
+            <input type="password" id="gemini-api-key" class="text-input" placeholder="AIzaSy..." />
+          </div>
+
+          <div id="gemini-oauth-fields" class="hidden">
+            <label class="field-label">Google OAuth Client ID (Opcional para flujo automático)</label>
+            <input type="text" id="gemini-client-id" class="text-input" placeholder="xxxx.apps.googleusercontent.com" />
+            <button id="btn-gemini-oauth" class="btn-oauth">🔐 Conectar con Google OAuth</button>
+            <label class="field-label">O pega tu Bearer Access Token de Gemini</label>
+            <input type="password" id="gemini-oauth-token" class="text-input" placeholder="ya29.a0..." />
+          </div>
+
+          <label class="field-label">Modelo Gemini</label>
+          <input type="text" id="gemini-model" class="text-input" value="gemini-2.0-flash" />
+        </div>
+
+        <!-- DeepSeek Section -->
+        <div class="provider-box hidden" id="box-deepseek">
+          <label class="field-label">DeepSeek API Token</label>
+          <input type="password" id="deepseek-api-key" class="text-input" placeholder="sk-..." />
+          <label class="field-label">Modelo DeepSeek</label>
+          <input type="text" id="deepseek-model" class="text-input" value="deepseek-chat" />
+        </div>
+
+        <!-- OpenAI Section -->
+        <div class="provider-box hidden" id="box-openai">
+          <label class="field-label">OpenAI API Key</label>
+          <input type="password" id="openai-api-key" class="text-input" placeholder="sk-proj-..." />
+          <label class="field-label">Modelo OpenAI</label>
+          <input type="text" id="openai-model" class="text-input" value="gpt-4o-mini" />
+        </div>
+
+        <!-- Custom Provider Section -->
+        <div class="provider-box hidden" id="box-custom">
+          <label class="field-label">Endpoint Compatible OpenAI</label>
+          <input type="text" id="custom-endpoint" class="text-input" value="https://api.groq.com/openai/v1/chat/completions" />
+          <label class="field-label">API Token</label>
+          <input type="password" id="custom-api-key" class="text-input" placeholder="gsk_..." />
+          <label class="field-label">Modelo</label>
+          <input type="text" id="custom-model" class="text-input" value="llama-3.3-70b-versatile" />
+        </div>
+
+        <button id="btn-save-ai" class="btn-primary full-width">💾 Guardar Configuración IA</button>
+        <p id="ai-save-status" class="save-msg"></p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

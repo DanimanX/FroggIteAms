@@ -1,0 +1,321 @@
+/* popup.css - FroggIteAms Chrome Extension Popup Styles */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 390px;
+  min-height: 510px;
+  background: #0d1021;
+  color: #f1f5f9;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #2b2d5c 0%, #172038 60%, #133b2e 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1.5px solid #34d399;
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: #a7f3d0;
+}
+
+.btn-hub {
+  background: rgba(79, 70, 229, 0.28);
+  border: 1px solid #6366f1;
+  color: #e0e7ff;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-hub:hover {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.tabs-nav {
+  display: flex;
+  background: #141930;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 6px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  color: #34d399;
+  border-bottom-color: #34d399;
+  background: rgba(52, 211, 153, 0.06);
+}
+
+.tab-panel {
+  display: none;
+  padding: 12px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+.toolbar-row {
+  display: flex;
+  gap: 6px;
+}
+
+.search-input,
+.text-input,
+.select-input {
+  width: 100%;
+  background: #161c33;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  color: #f8fafc;
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+.btn-icon-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 365px;
+  overflow-y: auto;
+}
+
+.meeting-card {
+  background: #151b32;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meeting-card:hover {
+  border-color: #34d399;
+}
+
+.meeting-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.meeting-card-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+
+.meeting-card-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.btn-xs {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-xs:hover {
+  background: #4f46e5;
+  border-color: #6366f1;
+}
+
+.btn-xs.accent {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
+}
+
+.live-card,
+.ai-config-card {
+  background: #151b32;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.live-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-pill {
+  font-size: 11px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.live-count {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.live-help {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.live-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-oauth {
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #10b981);
+  color: #fff;
+  flex: 1;
+}
+
+.btn-secondary {
+  background: #27324d;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.btn-oauth {
+  background: #2563eb;
+  color: #fff;
+  margin: 4px 0;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.live-preview-box {
+  max-height: 210px;
+  overflow-y: auto;
+  background: #0b0e1c;
+  border-radius: 7px;
+  padding: 8px;
+  font-size: 11.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: block;
+  margin-top: 4px;
+}
+
+.provider-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+  font-size: 11.5px;
+  color: #cbd5e1;
+  margin: 4px 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.save-msg {
+  font-size: 11px;
+  color: #34d399;
+  text-align: center;
+  min-height: 15px;
+}

@@ -1,0 +1,329 @@
+# Coordinación Traspaso Cuenta Ms Azure
+
+  Meeting started: 16/10/2026, 11:30:25 a.m.
+  Duration: 38 minutes
+  Participants: Caio Zentil, Christian Jovanny Segura Urzua, Daniel Eduardo Rojas Grasset, Daniel Francisco Zamora Galindo, Diego Santiago Perez Gonzalez, Jaime Carrasco, Jorge Daniel Quiroz Llanten, Jose Rodrigo Cruces Aguilera, Juan Mora, Pamela  Canaval, Paola Karolina Lillo Azúa, Rojas, Luis
+
+  [View original transcript](https://app.tactiq.io/api/2/u/m/r/zDlCqOvNFlaeghNHenOm?o=txt)
+
+    
+
+  
+
+  
+    ## Highlights
+
+    > 05:34 Daniel Francisco Zamora Galindo: Articulando esta reunión dado que. Nosotros hoy día tenemos créditos con en azure con tribus. Y. Dichos créditos a nosotros se nos terminan el día de mañana, por lo tanto de mañana los créditos son.
+> 11:04 Daniel Francisco Zamora Galindo: Sí Sí, lo que pasa es que a ver. Hay Hay lo como yo expliqué, nuestros créditos terminan mañana.
+> 15:26 Christian Jovanny Segura Urzua: Que tenemos por contrato con tibitbens mañana. Entonces, la idea hoy día, dado que están las dos contrapartes. Tanto tibit como global.
+> 15:36 Christian Jovanny Segura Urzua: Y además nos acompaña caio por el lado de de Microsoft y acture en particular, que es lo que nos convoca en esta cambio de de proveedor de de crédito. Es justamente Es justamente poder ver cuáles son las condiciones de entrada que tiene que tener el proveedor que recibe que necesitamos del proveedor saliente para poder nosotros orquestar y no tener ningún ningún, ninguna intermitencia ni ninguna problemática. El día de mañana.
+> 22:18 Jorge Daniel Quiroz Llanten: Oye, bueno, por mi parte me gustaría entender entonces cómo seguimos, porque la verdad que aquí, como les digo, me acompaña Diego, nuestro, especialista de Atxture, YY entender cómo cuáles sería el siguiente paso, entendiendo que ya mañana se vencen los los créditos de.
+> 26:04 Daniel Francisco Zamora Galindo: Para eso. Sí, pero eso eso lo lo lo podemos hacer mañana. Pamela, si eso es entre nosotros.
+> 26:23 Daniel Francisco Zamora Galindo: Yo lo apoyo en, en todo caso, en en ese escenario, ahora lo que lo que es, sí, lo que es importante. ¿Jaime, es que por lo que yo entendí de lo que indicó Jorge Quiroz hace un rato aquí la conchaparte que nos debería apoyar es Diego, cierto?
+> 26:56 Daniel Francisco Zamora Galindo: Perfecto, o sea, en el caso que tuviéramos alguna, o sea, eso te va a llegar entre 10 y mañana, aquí no cualquier cosa.
+> 27:55 Daniel Francisco Zamora Galindo: Pues es lo que yo es lo que yo es lo que yo entendí de todas estas conversa. No, no, no voy a tener dualidad de servicio, sino que voy a tener a una empresa que me va a empezar a entregar servicio mañana.
+> 30:13 Daniel Francisco Zamora Galindo: Ya yo entendería entonces que ese, ese esos últimos. Eso última, esa últimas dos actividades se realizarían mañana.
+> 30:45 Daniel Francisco Zamora Galindo: Durante la tarde, a lo mejor podría, podría decirte. Sé que mediodía, mañana o a las 16:00 h de la tarde.
+> 30:56 Rojas, Luis: Nosotros podríamos dejar el trance a request, listo. Y hasta que no se acepte no se va a ejecutar entonces. Idealmente, dejarlo hoy listo. Y ya, pues mañana podrían aceptar los. Sí.
+> 31:25 Jorge Daniel Quiroz Llanten: Y se puede proceder mañana con con lo requerido.
+> 32:35 Christian Jovanny Segura Urzua: Sí. ¿Ya entonces, mañana por el lado nuestro, Jose cruces, quién va a ir aprobando esto?
+> 33:04 Daniel Francisco Zamora Galindo: ¿Eso es mañana?
+> 33:05 Jose Rodrigo Cruces Aguilera: Pero se va a hacer mañana.
+> 33:05 Christian Jovanny Segura Urzua: Eso que va a ser mañana lo va a Paula Lillo también.
+> 33:23 Christian Jovanny Segura Urzua: ¿Cómo? Ya entonces mejor contigo, mañana ya y Por otro lado tenemos que después de que tú lo apruebes tiene que ir la aprobación por el lado de Diego y equipo de Tibit y ya con eso tendríamos la el traspaso completo de la cuenta.
+> 33:48 Christian Jovanny Segura Urzua: Dejémoslo fijémos aquí un horario, cosa de que por el lado nuestro a las dos haga por la aprobación y así tampoco. Tener a Diego, pendiente todo el día y tenga 1 hora en específico para que nos ayude con estas. Si la gente de global. ¿Les parece al mediodía? De mañana.
+> 34:16 Christian Jovanny Segura Urzua: Ya. Entonces, mañana al mediodía. De repente, Dani dentro de la de la web estáis haciendo, dejemos, dejemos esta reunión, agendar igual para mañana. No es que nos vayamos a subir a la reunión, pero por lo menos quedamos todos conectados a través del chat o si se requiere algo.
+> 34:51 Christian Jovanny Segura Urzua: Partimos mañana entonces que hemos esta reunión de 12 a una mañana a las 12 empieza la aprobación de Jose cruces y 1230 debería estar en la aprobación por el lado de TI y de ahí ya. Después hacemos un chequeo de que todas las entidades se hayan generado de manera correcta.
+> 35:40 Rojas, Luis: Ya eso podría hacerse, idealmente hoy, para que no quede como paso pendiente para mañana y que mañana solo sea aceptación de Transfer.
+> 36:10 Rojas, Luis: Primero, ya ya tienes los dos links, después que esos dos links sean aceptados. Se puede generar el siguiente link de aceptación que se llama Gigabit, y ahí se los volvemos a enviar y ya con eso quedaríamos con esos pasos adelantados y.
+> 37:04 Daniel Francisco Zamora Galindo: Perfecto. ¿Estaríamos entonces chiquillos ya ya pasarle la 7?
+> 37:11 Daniel Francisco Zamora Galindo: Ahora, mañana. A cita el canal abierto.
+
+  ## Transcript
+
+  00:00 Jorge Daniel Quiroz Llanten: Hola Daniel Rojas. Puros Daniel, no hay 10 buen día.
+00:04 Daniel Eduardo Rojas Grasset: Buen día.
+00:07 Jorge Daniel Quiroz Llanten: Yo también soy Daniel. Si ustedes se fijan, Jorge Daniel.
+00:10 Daniel Eduardo Rojas Grasset: No me da razón, pues.
+00:11 Daniel Francisco Zamora Galindo: ¿Eh?
+00:12 Jorge Daniel Quiroz Llanten: Y Y en mi casa me dicen, Daniel. No sé por qué, pero bueno.
+00:19 Paola Karolina Lillo Azúa: Hola, Buenos días.
+00:20 Daniel Francisco Zamora Galindo: No.
+00:21 Jorge Daniel Quiroz Llanten: ¿Hola Paola, cómo estás?
+00:22 Paola Karolina Lillo Azúa: Hola Jorge. Bien, gracias.
+00:25 Daniel Eduardo Rojas Grasset: ¿Vale?
+00:40 Jorge Daniel Quiroz Llanten: ¿Hola Diego, cómo estás?
+00:44 Diego Santiago Perez Gonzalez: ¿Buen día cómo están?
+00:45 Jorge Daniel Quiroz Llanten: Bien, gracias. Ahí para el para el resto, equivoque de IPS. Diego es nuestro especialista de de Artur. ¿Nos va a acompañar en esta sesión ya?
+01:02 Daniel Francisco Zamora Galindo: Muy bien ahora Diego bienvenido.
+01:05 Diego Santiago Perez Gonzalez: Gracias. Buenos días.
+01:08 Paola Karolina Lillo Azúa: Hola Hola, Buenos días Diego.
+01:14 Rojas, Luis: Hola, hola buen día a todos.
+01:17 Jorge Daniel Quiroz Llanten: Buen día. Ay Daniel Daniel tú Ay, Daniel Daniel, Tú no.
+01:37 Daniel Francisco Zamora Galindo: Espera, dame dos segundos.
+01:38 Jorge Daniel Quiroz Llanten: ¿Das el GO? Ah, no sé si falta alguien más de tu lado.
+01:42 Daniel Francisco Zamora Galindo: Dame dos segundos.
+01:43 Jorge Daniel Quiroz Llanten: Sí, claro.
+01:56 Daniel Francisco Zamora Galindo: Está Jaime bienvenido, Jaime Carrasco.
+01:59 Jaime Carrasco: Sí, hola, Buenos días. Nos falta 1 a nosotros por el lado de por el lado de global, que es de Juan Mora.
+02:06 Daniel Francisco Zamora Galindo: Perfecto tacayo del lado de Microsoft. Hola, buen día.
+02:12 Caio Zentil: Buen día, cómo están mucho gusto.
+02:15 Daniel Francisco Zamora Galindo: Bendiga gallo. Mucho gusto a tiempo verte. Sí está. Para marcar en SQR Subvirts me. Para marcar en SQ Me faltan del equipo de Jaime y estaríamos para poder comenzar la sesión.
+03:32 Daniel Francisco Zamora Galindo: ¿Cayo marco habló contigo, cierto?
+03:37 Caio Zentil: No estoy hablando con él ahora aquí sube.
+03:39 Daniel Francisco Zamora Galindo: No. Ya o K.
+04:52 Christian Jovanny Segura Urzua: Hola Hola buen día Hola, buen día a todos y todas.
+04:56 Daniel Francisco Zamora Galindo: Buen día.
+04:56 Daniel Eduardo Rojas Grasset: Buen Buen día.
+04:58 Jose Rodrigo Cruces Aguilera: Buenos días.
+04:59 Jorge Daniel Quiroz Llanten: Buen día Cristian.
+04:59 Paola Karolina Lillo Azúa: Hola, Buenos días.
+05:05 Christian Jovanny Segura Urzua: ¿Con Dani nos falta alguna contraparte, no?
+05:08 Daniel Francisco Zamora Galindo: Sí, Jaime dijo que faltaba alguien de su equipo.
+05:11 Jaime Carrasco: Sí, pero en virtud del tiempo, comencemos ya. Se está subiendo, bueno. ¿Cómo se mama?
+05:18 Daniel Francisco Zamora Galindo: Ya bueno. Ahí está Juan Mora, se está gasuelto.
+05:24 Jaime Carrasco: Ahí está, sí. Ahí está.
+05:26 Daniel Francisco Zamora Galindo: Ya yo yo.
+05:27 Juan Mora: 3040, Lucas, 5 dólares.
+05:31 Daniel Francisco Zamora Galindo: Estoy.
+05:31 Juan Mora: Igual que igual cualquier.
+05:34 Daniel Francisco Zamora Galindo: Articulando esta reunión dado que. Nosotros hoy día tenemos créditos con en azure con tribus. Y. Dichos créditos a nosotros se nos terminan el día de mañana, por lo tanto de mañana los créditos son.
+05:57 Daniel Francisco Zamora Galindo: Son gestionados. Por global car Por global Cartalo, para lo cual está Jaime y su equipo. ¿Entonces entiendo que hay una conversante ustedes para hacer el traspaso de la? ¿Eh? ¿Cómo se?
+06:17 Jorge Daniel Quiroz Llanten: De la cuenta.
+06:18 Daniel Francisco Zamora Galindo: De la cuenta esa es. Estoy en lo correcto ¿Estoy en lo correcto, Jaime?
+06:25 Jaime Carrasco: Sí, sí, correcto hay. Hay varios pasos que que se tienen que realizar para que nosotros tomemos. Se Sean parte o del. Del Renacimiento de de de la cuenta con Nacho.
+06:40 Daniel Francisco Zamora Galindo: Ya, a ver, yo.
+06:40 Jaime Carrasco: El primer paso es el bye.
+06:42 Daniel Francisco Zamora Galindo: Sí, pero solamente resumir de la parte de infraestructura de IPS está bueno. José Cruz es como jefe de infraestructura y la Paola como especialista, la Paola, como especialista, quienes conocen y la contraparte administrativa, posteriormente es Daniel Rojas que.
+06:55 Jaime Carrasco: Oh.
+06:59 Daniel Francisco Zamora Galindo: Es con quien Es con quien siguen el. ¿El el la gestión de este de este servicio yo apoyo por el lado, así que sí, don Jaime, la pelota para usted?
+07:12 Jaime Carrasco: Sí el mira para para iniciarte este proceso, necesitamos que bueno, yo le envié por por correo. A José Luis y a Ana y a Paola. Que acceda accedan a ese link para. Para comenzar todo, todo este flujo. Con los usuarios de global admin de los dos tenant el tenant de Chile and de IPS. Ese es el primer Ese es el primer paso. Luego de eso tenemos que ser varios otra, otras cosas y entre medias necesitamos también un un dato que es 1 1 I d de divided.
+07:49 Jaime Carrasco: ¿Para hacer este esta transferencia?
+07:52 Daniel Francisco Zamora Galindo: ¿Que fue el dato que te dijo Jorge?
+07:52 Jaime Carrasco: Yo mira
+07:57 Jorge Daniel Quiroz Llanten: Sí, ahí Diego, no sé si nos puede apoyar con ese dato.
+08:02 Diego Santiago Perez Gonzalez: Cu ¿Cuál es el dato que requieren?
+08:04 Jorge Daniel Quiroz Llanten: En la sí había había hablado con con Danny Tambo y nos pidieron el MP. MBNID. Ahí está, ahí lo puso Luis Rojas.
+08:17 Jaime Carrasco: Ahí está. Sí.
+08:21 Diego Santiago Perez Gonzalez: Y en 1 segundo ya se los confirmo.
+08:53 Diego Santiago Perez Gonzalez: Este es nue Este es nuestro nuevo ID.
+09:22 Jaime Carrasco: Ya super. Por aquí aquí, ahí también dejé en el chat el el link que necesitamos que que accedan ahí los, los download and mind de de cada tenant para. Para poder continuar con el con el flujo. De transferencia. Y si no apoyan con el tema el ID, también de. Hola Querétaro, creo creo que nos vamos a sacar eso, nosotros también.
+10:14 Jose Rodrigo Cruces Aguilera: Consulta, pero en en tengo una duda, en esta reunión creo que vamos a ver un tema contractual, una parte más técnica. ¿Aló, me escucha o no?
+10:35 Jaime Carrasco: Yo creo que ambos voy a entenderían ahí también. Samuel. En barrio también.
+10:44 Daniel Francisco Zamora Galindo: Perdón, perdón, aquí manda Jose.
+10:47 Jose Rodrigo Cruces Aguilera: Oye, lo que es que yo tenía una pregunta si que lo que día hoy vamos a ver un tema más. Técnico o más contractual porque, o sea, por lo menos lo que yo entendiera, que que íbamos a ver algo del contrato y de ahora en a esta hora.
+11:04 Daniel Francisco Zamora Galindo: Sí Sí, lo que pasa es que a ver. Hay Hay lo como yo expliqué, nuestros créditos terminan mañana.
+11:11 Daniel Francisco Zamora Galindo: Entonces, hay varias actividades técnicas que dice Jaime que hay que hacer durante el día de hoy para que para que eso se pueda ocurrir. ¿Estoy en lo correcto, Jaime?
+11:22 Jaime Carrasco: Sí.
+11:23 Daniel Francisco Zamora Galindo: Ya. Y ahí las pedía. Yo desconozco en la parte técnica hacia adentro y José te pido el apoyo con Jaime y frenar lo que haya que frenar. En el caso que corresponda.
+11:34 Jose Rodrigo Cruces Aguilera: Ya mira, a ver, ya vale, gracias, mira, lo que pasa es que yo tengo una duda YYY me gustaría. Preguntarla en realidad el enlace. Cierto que mandaron es un enlace de una invitación por una relación comercial cierto del cloud solution provider 1. C s P. Ero Ero lo que me llama la atención y vuelvo a insistir es que no sale directamente el nombre de global, sino que sale el el nombre de otro t de synnex o algo así. ¿Entonces, dentro de los AI que mandan? Hay una parte específica que dice que tenemos una relación, un un distribuidor indirecto. No sé si alguien me puede explicar ese tema.
+12:22 Jose Rodrigo Cruces Aguilera: Porque el el MSPPID que mandan, claro, justamente es un identificador numérico cierto del del partner del ecosistema de de los CSP que lo que están como logueados o autorizados por Microsoft. Eso está, está clarísimo. ¿Pero, pero por qué sale como en directo? ¿Y por qué sale el nombre de test Syndc en vez de salir global? Es el esa es la pregunta y cómo indirecto sal.
+12:23 Rojas, Luis: Sí. Hola.
+12:46 Jose Rodrigo Cruces Aguilera: Global.
+12:48 Rojas, Luis: ¿Hola Jose, yo te puedo responder eso, cómo estás Luis para qué?
+12:53 Jose Rodrigo Cruces Aguilera: ¿Luis D Luis D Luis de dónde?
+12:53 Rojas, Luis: Efectivamente. Yo te decile.
+12:56 Jaime Carrasco: Sí.
+12:57 Rojas, Luis: ¿Te gusta justamente te decirle? Sí, esta es una figura de reventa que tiene Microsoft a nivel global. Dentro del tipo de contrato CSP. Dentro del tipo de contrato CSP Es algo que está estandarizado y lo ves de esa forma porque. Dentro del relacionamiento que ya existe. ¿Entre global CATALOG IT de cine? Microsoft lo estructura de esta forma, donde nosotros somos una figura de distribuidor sí. O mayorista.
+13:28 Rojas, Luis: También se le puede También se le puede decir. Y luego al catalog. Es que es tu partner de tecnología, que te revende y es la administración, los los programas, los servicios de Microsoft. Es por eso que en algunos casos vas a ver arte de cinex incluso en un futuro.
+13:43 Jose Rodrigo Cruces Aguilera: Mm.
+13:51 Rojas, Luis: Si hay algún proyecto de donde vayamos a financiar. ¿Algún tipo de de proyecto de implementación o recurso? También puedes ver en algún momento el nombre de este. Que estamos dentro del club.
+14:06 Jose Rodrigo Cruces Aguilera: Ya hoy yo ahí gracias Luis, yo no sé lo que viene dentro del contrato, pero no sé si el contrato dice específicamente global o dice global global te de.
+14:16 Christian Jovanny Segura Urzua: Whatsapp. ¿O el?
+14:20 Jose Rodrigo Cruces Aguilera: Ma se lo Ma se lo dejo a los administradores ahí.
+14:23 Christian Jovanny Segura Urzua: Si no hay, hay solo para claridad, claro, nosotros estábamos acostumbrados a trabajar con TVTV dentro de de de su calidad de partner de los distintos cloud vende de manera directa, sin distribuidor, pero eso pasa solamente con compañías que son grandes, en este caso, como el oferente que se adjudicó el tema de los créditos cloud D Azure.
+14:23 Jose Rodrigo Cruces Aguilera: Diga nada más Cristian.
+14:48 Christian Jovanny Segura Urzua: Tiene una categoría de partner un poco menor. Ellos utilizan distribuidor y es parte del modelo sí que YY lo por contrato, al menos está, está eso así, permitido que una forma de adquisición de crédito. Pero igual lo revisamos internamente. Si hoy día hoy día tenemos que tener dos focos, una más allá del papeleo administrativo que tenga que ver de por medio para poder hacer el cierre contractual que tenemos con tibit que lo podemos hacer los días siguientes y la apertura del contrato nuevo o o el Acta de inicio con con global es poder resguardar a la institución la continuidad operativa en base a que los cré.
+15:03 Jose Rodrigo Cruces Aguilera: Ya sí.
+15:26 Christian Jovanny Segura Urzua: Que tenemos por contrato con tibitbens mañana. Entonces, la idea hoy día, dado que están las dos contrapartes. Tanto tibit como global.
+15:36 Christian Jovanny Segura Urzua: Y además nos acompaña caio por el lado de de Microsoft y acture en particular, que es lo que nos convoca en esta cambio de de proveedor de de crédito. Es justamente Es justamente poder ver cuáles son las condiciones de entrada que tiene que tener el proveedor que recibe que necesitamos del proveedor saliente para poder nosotros orquestar y no tener ningún ningún, ninguna intermitencia ni ninguna problemática. El día de mañana.
+16:04 Christian Jovanny Segura Urzua: Que nos lleve después a tener una regularización de pago o algo por el estilo, ya teniendo un contrato vigente y que está en tramitación administrativa, pero que el mismo contrato nos permite comenzar sin la total tramitación. Sí que ahí, ya que Jorge por el lado de TI, te está viendo los datos, no sé si era no era Luis, era. ¿Alguien por el lado global que está Jaime me parece mucho, no? Bueno ya Jaime.
+16:29 Jaime Carrasco: Sí. Sí, yo creo que.
+16:31 Pamela  Canaval: Sí, Jaime.
+16:32 Christian Jovanny Segura Urzua: Entonces, la idea es que vayamos viendo tanto con Jorge por el lado de tibi, qué es lo que requieren de nosotros, si requieren algo por el lado de global y en particular global, que es quien recibe hoy día estas cuentas. ¿Qué es lo que necesitan? Ya dijeron un par de cosas que tienen que ver con el tema de de de aceptar en algunas cuentas la incorporation dentro de Del CSP.
+16:55 Christian Jovanny Segura Urzua: De Decide que el mayorista que de cierta forma le distribuye los créditos a global.
+17:05 Pamela  Canaval: ¿Aló, me escuchan? Escuchad.
+17:09 Jaime Carrasco: Sí, pame, se escucha.
+17:10 Pamela  Canaval: Sí, disculpen que estoy en. Afuera hay peces, la entrada en el edificio, la calle. Sí, Cristian y para todos los de IPS. Ayer Jaime, que es el encargado de proyecto, bueno, que ya tiene hace un rato el proyecto, obviamente. Le pidió ayuda a Daniel y Daniel nos está ayudando con esa información, de eso están hablando cierto del de toda la información que necesitamos tanto de IPS como de Cibit para la habilitación.
+17:30 Pamela  Canaval: Le pidió ayuda a Daniel y Daniel nos está ayudando con esa información de eso están hablando cierto del de toda la información que necesitamos tanto de IPS
+17:42 Jaime Carrasco: El chip también le he pedido ahí también José El chip también le he pedido ahí también. José tenía una duda respecto al. ¿Ah, y por qué? ¿A por qué aparecía? TD cine, es entre ellos básicamente eso, y es Cristian muy bien. Ahí lo lo aclaró.
+17:51 Pamela  Canaval: Porque sí. Ah perfecto, sí, porque nuestro distribuidor, exactamente. Hay dos formas, se le compra directo a través de distribuidor, pero nosotros lo en esta oportunidad lo estamos haciendo de cine, ellos funcionan, rebien, tienen muchos, muchos contactos de Microsoft y Google a nivel mundial, así que conoce muy bien el mercado.
+18:17 Pamela  Canaval: Mi tema chico de global, es que tengan todo claridad y que podamos aclarar esta reunión. Cualquier duda que tengan para el tema del traspaso. Jaime, sobre todo a ti, que lleva proyecto.
+18:31 Jaime Carrasco: Sí. Sí, sí como como dije. Como primera etapa, necesitamos que que quedemos gritado con con el tema del relacionamiento con el link que que envié. Nosotros, internamente, tenemos que hacer un par de cosas con. Nosotros internamente tenemos que hacer un par O T V Zinex. Para que luego aparezca una. Se genere la solicitud de transferencia. Va a tronada la la relación comercial y de facturación hacia hacia nosotros hacia el global.
+19:04 Pamela  Canaval: Perfecto Perfecto. No sé si el equipo IPS tendrá alguna otra duda que aprovechad de aclarar.
+19:11 Jose Rodrigo Cruces Aguilera: Sí, yo tengo otra duda con respecto al.
+19:16 Pamela  Canaval: Conozco.
+19:17 Jose Rodrigo Cruces Aguilera: Al tema contractual nuevamente recuérdense que yo he llevado varios contratos de nube, por eso es que por eso es que me llama la atención este este este contrato en particular. Resulta que es posible YY aquí dejo la pregunta también para que me la puedan aclarar, es posible que nosotros hagamos Click, Click, Click en este link. YY como no han terminado la relación contractual con el otro proveedor, vamos a tener dos proveedores. Lo dejo ahí también a lo al equipo de administración nuevo que está a tomando este tema para saber si esto es posible o tenemos que esperar que termine el el el otro YY luego aceptar.
+20:02 Jose Rodrigo Cruces Aguilera: Ese ese cómo lo vamos a hacer ahí en en en ese momento, porque al momento de nosotros dar la aceptación a ese link le vamos a decir que al nuevo al nuevo proveedor. Cierto que nos puede vender licenciamiento, nos puede vender, o sea, definitivamente lo aceptamos como nuestro proveedor de licencia y otras cosas más a nivel de Microsoft.
+20:26 Jose Rodrigo Cruces Aguilera: Entonces, hoy día tenemos actividad en este, en esta figura, pero, pero no sé si que hay que hacerlo antes o después. Cuando vence el contrato. Esa es la pregunta final.
+20:35 Rojas, Luis: Hola Hola Jose, ya te puedo responder también esa pregunta. Puedes tener varios proveedores. De Microsoft en general. No hay ningún tipo de conflicto con respecto a en la consola algún tipo de ejecución o. De hecho, es necesario que los tengas en paralelo. Por un momento hasta que se haga la transferencia. Y luego, si lo deseas, puedes entrar a la consola de administración y hacer el término de relación con el proveedor que está saliendo. Ese sería como la mejor práctica o K. Si ya no mantienes ningún tipo de producto o servicio con ese proveedor, lo puedes. Puedes hacer del término de la relación.
+21:25 Jose Rodrigo Cruces Aguilera: Ya perfecto, perfecto. Eso eran algunos tipos de bueno. ¿En realidad eran las consultas que yo tenía con respecto a si podíamos tener la dualidad de proveedores bajo ofreciendo casi el mismo servicio, por aunque sea un par de horas minutos que ustedes saben que el servicio público siempre ha auditado y por cosas mínimas se pregunta en se puede levantar?
+21:48 Jose Rodrigo Cruces Aguilera: ¿Alguna investigación? Ya y la idea es que eres justamente tener la salvedad y la parte técnica, hay que estar seguro de que lo que estamos haciendo y no tampoco ir en contra de nuestros administradores de contratos.
+22:03 Pamela  Canaval: Claro Claro que sí, José. Más dudas, equipo. Por parte de ambas partes.
+22:18 Jorge Daniel Quiroz Llanten: Oye, bueno, por mi parte me gustaría entender entonces cómo seguimos, porque la verdad que aquí, como les digo, me acompaña Diego, nuestro, especialista de Atxture, YY entender cómo cuáles sería el siguiente paso, entendiendo que ya mañana se vencen los los créditos de.
+22:38 Jorge Daniel Quiroz Llanten: Tps para contivity, sí. ¿Y tener bien claro, no esto, cómo, cómo seguimos en esto?
+22:50 Pamela  Canaval: Tipo global nos ayudan con la respuesta, porfa, porque.
+22:55 Jorge Daniel Quiroz Llanten: La verdad que todavía disculpen, yo todavía estoy como con con dudas.
+22:56 Jaime Carrasco: Sí, mira.
+22:56 Jorge Daniel Quiroz Llanten: La verdad que ¿Cómo, cómo avanzamos, porque la el título, Digamos, de de la canción, Cómo se dice, era el traspaso de la cuenta de de Azure Global Catalog? Sí.
+23:09 Daniel Francisco Zamora Galindo: De hecho el título de la canción es un poco más amplio De hecho, el título de la canción es un poco más amplio. Jaime dice, Oye, Perdón Jorge dice coordinación.
+23:13 Jorge Daniel Quiroz Llanten: Ajá. Coordinación traspaso cuenta Microsoft.
+23:16 Rojas, Luis: Sí Sí.
+23:17 Daniel Francisco Zamora Galindo: Lo sé Lo sé, sí.
+23:18 Rojas, Luis: Perfecto.
+23:19 Jorge Daniel Quiroz Llanten: Ya o K entonces, entender un poquito cómo, cómo seguimos, pues ya eso.
+23:25 Rojas, Luis: Mira, ahí puedo ayudar. También el equipo, lo primero sería la aceptación de Del link de Relacionamiento que básicamente. Crea las bases de El RELACIONAMIENTO cliente, proveedor de tecnología Microsoft global Catalog. En este caso, deben aceptarle unos dos temas. Son usuario global administración. ¿Luego de esto, ya global va a poder verlos a ustedes en su consola de clientes? Y a partir de ahí vamos a hacer algunas solicitudes que TV debe aceptar. O K. Solicitudes de transferencia son transparentes para IPS como cliente final, lo que quiere decir que no va a haber afectación de servicio, degradación, ningún tipo de interrupción. Porque es más más un cambio de Building.
+24:18 Rojas, Luis: Sí se podría decir así. ¿Cambio de billing slash administración entonces para ustedes, como cliente final van a mantener sus servicios? Arriba. Y detrás, Microsoft va a ser una gestión automática donde pues cambia de proveedor de tibit a global. Pero para esto es súper necesario. Los datos que Diego ya me acaba de compartir, donde nosotros vamos a hacer el envío de la solicitud de transferencia y luego ustedes deben aceptar, ustedes deben aceptar esa solicitud.
+24:54 Rojas, Luis: ¿Qué si no se acepta? No va a suceder. ¿Entonces ese es como el camino de cara a ustedes como IPS y a ustedes como TIC? ¿Eh? De cara a nosotros hay que ser otros procesos, pero igual son transparentes para para.
+25:16 Pamela  Canaval: Jaime, eso tú se lo vas a informar a través de un informe, un correo al equipo IPS para que esté al tanto de de los pasos que estamos avanzando por favor.
+25:17 Rojas, Luis: ¿Entonces?
+25:35 Jaime Carrasco: Estaba hablando contigo, que sí. Sí, sí. Vamos a ir comunicando. Todos los pasos que estemos que estamos haciendo. Creo que me que me hace tener aquí para el relacionamiento. Luego nosotros generamos con en linterna con con el equipo y con 3 Synix la. La solicitud de transferencia para que te llegue a ti. Viene formamos ahí de inmediato a I p S para que no ayude ahí a.
+25:56 Jaime Carrasco: Viene formamos ahí de inmediato a i p s para que no ayude ahí A a gestionar la aceptación de esa solicitud.
+26:04 Pamela  Canaval: Porque entiendo que tiene que haber también un acto de inicio, también firmada, que es el documento estándar que tiene IPS.
+26:04 Daniel Francisco Zamora Galindo: Para eso. Sí, pero eso eso lo lo lo podemos hacer mañana. Pamela, si eso es entre nosotros.
+26:17 Pamela  Canaval: Ningún problema ya ningún problema.
+26:18 Daniel Francisco Zamora Galindo: Sí, sí, eso, porque eso lo eso lo ven con Daniel Roja.
+26:21 Pamela  Canaval: Ya perfecto.
+26:23 Daniel Francisco Zamora Galindo: Yo lo apoyo en, en todo caso, en en ese escenario, ahora lo que lo que es, sí, lo que es importante. ¿Jaime, es que por lo que yo entendí de lo que indicó Jorge Quiroz hace un rato aquí la conchaparte que nos debería apoyar es Diego, cierto?
+26:25 Pamela  Canaval: Gracias, dale.
+26:38 Daniel Francisco Zamora Galindo: Bueno, es correcto eso, Jorge.
+26:39 Jorge Daniel Quiroz Llanten: Sí. Diego Pérez disculpa, Diego, no sé si tú tienes algún alcance para ir avanzando con esto.
+26:41 Daniel Francisco Zamora Galindo: Ya. Perfecto.
+26:42 Diego Santiago Perez Gonzalez: Sí. No. Ahí lo único que necesitamos es que nos envíen la solicitud de Transfer request y la aceptamos, y eso es todo lo que tiene que hacer TV.
+26:55 Jorge Daniel Quiroz Llanten: ¿Ah, vale?
+26:56 Daniel Francisco Zamora Galindo: Perfecto, o sea, en el caso que tuviéramos alguna, o sea, eso te va a llegar entre 10 y mañana, aquí no cualquier cosa.
+27:04 Diego Santiago Perez Gonzalez: A A nosotros no nos llegan notificación, tienen que confirmarnos que el transfer ya fue enviado para que nosotros entremos a la plataforma y podamos ver el transfer y aceptarlo.
+27:13 Daniel Francisco Zamora Galindo: Perfecto, yo lo
+27:14 Diego Santiago Perez Gonzalez: No nos llega ninguna notificación.
+27:15 Daniel Francisco Zamora Galindo: y entonces, cuando esté en su activo Jaime, tus Gatillas con nosotros, en este caso con José y Paola para y Notificamos a Jorge para que haga lo correspondiente contigo.
+27:20 Jaime Carrasco: Sí. Rub.
+27:28 Jose Rodrigo Cruces Aguilera: ¿Consultarlo ahora sí a los administración de contrato YY Daniel, entonces la Pau, puede aceptar el link? Hoy día.
+27:40 Daniel Francisco Zamora Galindo: Es que yo yo entiendo. Yo, a ver, yo entiendo que lo que. Aceptar el link no es aceptar prestación de servicio. Si es así, se podría.
+27:53 Jose Rodrigo Cruces Aguilera: Ya.
+27:55 Daniel Francisco Zamora Galindo: Pues es lo que yo es lo que yo es lo que yo entendí de todas estas conversa. No, no, no voy a tener dualidad de servicio, sino que voy a tener a una empresa que me va a empezar a entregar servicio mañana.
+27:55 Jose Rodrigo Cruces Aguilera: Ya entonces. Perfecto ya listo entonces, nosotros después de esta reunión le vamos a dar que es lo que hay al link.
+28:14 Pamela  Canaval: ¿El dato de la persona técnica de Diego por parte de ustedes, si nos pueden hacer el traspaso? Esa información, por favor, el contacto.
+28:23 Daniel Francisco Zamora Galindo: Ah, están están, está en esta sesión Pamela. Los que estamos acá somos los somos los incumbentes y el mediador es Cayo sentir por el lado de Microsoft. Si necesitásemos algo de él eventualmente.
+28:27 Jaime Carrasco: Sí.
+28:27 Pamela  Canaval: ¿Ah, de veras chupe ya ya?
+28:29 Jaime Carrasco: Sí.
+28:30 Pamela  Canaval: O K.
+28:38 Rojas, Luis: Hay equipo, les dejé un pequeño listado, como de los pasos que se van a seguir. Para el equipo de IPSY si le atiende va a haber dos links de aceptación 1, donde básicamente se vuelven cliente. De global. ¿Y otro, dónde acepta el proceso de o le dan permiso a global de administración de administrar esos servicios? ¿Quién les va a vender Microsoft los los diferencia sí o no? ¿Un link para aceptar ser cliente y un link para aceptar? Pues que hagan servicios de gestión, administración, soporte, etcétera.
+29:20 Daniel Francisco Zamora Galindo: Ajá.
+29:23 Rojas, Luis: Y luego viene el procesamiento interno del global catalog con las cuentas de cliente, que es crear las cuentas de cliente, etcétera, en nuestras plataformas. Luego viene la creación de la solicitud del Transfer request, que se llega a su al. Carnal. Sentirte te va a ver, Diego. A Diego y llego ahí ya va a poder ver en la cuenta A Diego y llego ahí, ya va a poder ver en la cuenta y aceptar.
+29:48 Daniel Francisco Zamora Galindo: Y eso he realizado eso. En las cuentas están migradas, es lo que entiendo.
+29:53 Rojas, Luis: Sí, sí, luego que el trance recuerde se ejecuta. Diego lo Diego lo acepta, hay un proceso ahí, automático, de ejecución interna. Y ya, ahí empiezan a aparecer. En. En su plataforma, en su consola y ya pueden gestionar, empezar a hacer todos los. Te tienen que hacer.
+30:13 Daniel Francisco Zamora Galindo: Ya yo entendería entonces que ese, ese esos últimos. Eso última, esa últimas dos actividades se realizarían mañana.
+30:28 Rojas, Luis: Pues en. ¿Tienen 1 hora específica cuando se acaban los créditos o es simplemente la fecha calendario?
+30:38 Daniel Francisco Zamora Galindo: ¿Así como ahora específica, no te la puedo dar?
+30:41 Rojas, Luis: Sí.
+30:45 Daniel Francisco Zamora Galindo: Durante la tarde, a lo mejor podría, podría decirte. Sé que mediodía, mañana o a las 16:00 h de la tarde.
+30:54 Rojas, Luis: Bueno, nosotros.
+30:54 Daniel Francisco Zamora Galindo: Cristian casi se va ahí.
+30:56 Rojas, Luis: Nosotros podríamos dejar el trance a request, listo. Y hasta que no se acepte no se va a ejecutar entonces. Idealmente, dejarlo hoy listo. Y ya, pues mañana podrían aceptar los. Sí.
+31:12 Daniel Francisco Zamora Galindo: Jorge, no hay problema para hacerlo así.
+31:17 Jorge Daniel Quiroz Llanten: Diego. La verdad que Diego es nuestro especialista yo ahí La verdad que Diego es nuestro especialista, yo ahí no, no meto mano.
+31:24 Diego Santiago Perez Gonzalez: Señor.
+31:25 Jorge Daniel Quiroz Llanten: Y se puede proceder mañana con con lo requerido.
+31:30 Diego Santiago Perez Gonzalez: Sí, ustedes no, no más confirman. Cuándo se hace la aceptación y ya. Se les traspasa al nuevo proveedor.
+31:38 Daniel Francisco Zamora Galindo: Perfecto.
+31:39 Jorge Daniel Quiroz Llanten: Vale, ahí dejé los correos de de por el lado nuestro ya para que nos pongan ahí en copia o o en el para según el requerimiento.
+31:42 Daniel Francisco Zamora Galindo: Ya. Aquí voy este de acuerdo.
+31:50 Diego Santiago Perez Gonzalez: Por favor, porque también copiar a a Dani si es tan amable.
+31:54 Jorge Daniel Quiroz Llanten: Perdón.
+31:54 Daniel Francisco Zamora Galindo: A Danny tampo.
+31:55 Diego Santiago Perez Gonzalez: Copiará Dani Jorge.
+31:57 Jorge Daniel Quiroz Llanten: Disculpa que no, no escuché bien.
+32:00 Diego Santiago Perez Gonzalez: Que Copiará Danny Tambo, por favor.
+32:03 Jorge Daniel Quiroz Llanten: Ah, ya les dejo el correo de Danny dambol, gerente de nube pública antivirus, ya les voy a dejar el correo también ahí.
+32:09 Daniel Francisco Zamora Galindo: Ya.
+32:09 Jorge Daniel Quiroz Llanten: Por favor mantenerlo ahí en cobia siempre.
+32:12 Daniel Francisco Zamora Galindo: Perfecto ahora sí, Cristian perdón.
+32:13 Jaime Carrasco: ¿Vale?
+32:16 Christian Jovanny Segura Urzua: No, mi mi consulta. ¿Tuve que salir un ratito, pero se supone que primero aprobamos nosotros y después aprueba TV, ese es el orden o no?
+32:28 Rojas, Luis: Sí. 222 links, dos Links. Ustedes por cada tema dos links.
+32:28 Daniel Francisco Zamora Galindo: Eso es lo que entendí, sí.
+32:29 Jaime Carrasco: Sí.
+32:30 Christian Jovanny Segura Urzua: Sí, ya.
+32:35 Rojas, Luis: Y luego divide dos, dos transfer.
+32:35 Christian Jovanny Segura Urzua: Sí. ¿Ya entonces, mañana por el lado nuestro, Jose cruces, quién va a ir aprobando esto?
+32:46 Jose Rodrigo Cruces Aguilera: La la paulillo lo los los de los lightlo. Cerrando esta reunión, ya la PAO va a habilitar los los links que va a quedar listo.
+32:56 Christian Jovanny Segura Urzua: Ya pero esa es la habilita Ya, pero esa es la habilitación de la cuenta. Por otro lado, tenemos que la aceptación de la transferencia. De de un proveedor a otro.
+33:04 Daniel Francisco Zamora Galindo: ¿Eso es mañana?
+33:05 Jose Rodrigo Cruces Aguilera: Pero se va a hacer mañana.
+33:05 Christian Jovanny Segura Urzua: Eso que va a ser mañana lo va a Paula Lillo también.
+33:09 Jose Rodrigo Cruces Aguilera: Si no que lo me lo mandan a mí y lo hago yo. Yo tengo permiso sobre los tenis animal.
+33:15 Christian Jovanny Segura Urzua: Ya, o sea, que nos mantengamos todos en copia y ahí, una vez que se habilite, nos nos comunicamos ya eso por un lado.
+33:19 Jose Rodrigo Cruces Aguilera: Sí, porque no pago trabajo hoy día a las 8. Ojo, sí que mejor a las 8 trabaja la pago hoy día.
+33:23 Christian Jovanny Segura Urzua: ¿Cómo? Ya entonces mejor contigo, mañana ya y Por otro lado tenemos que después de que tú lo apruebes tiene que ir la aprobación por el lado de Diego y equipo de Tibit y ya con eso tendríamos la el traspaso completo de la cuenta.
+33:28 Jose Rodrigo Cruces Aguilera: Exacto.
+33:41 Christian Jovanny Segura Urzua: ¿Como no tenemos 1 hora fija dónde va a ser el el término de los créditos, por así decirlo?
+33:46 Daniel Francisco Zamora Galindo: Sí.
+33:48 Christian Jovanny Segura Urzua: Dejémoslo fijémos aquí un horario, cosa de que por el lado nuestro a las dos haga por la aprobación y así tampoco. Tener a Diego, pendiente todo el día y tenga 1 hora en específico para que nos ayude con estas. Si la gente de global. ¿Les parece al mediodía? De mañana.
+34:13 Jorge Daniel Quiroz Llanten: Yo no tengo problema.
+34:13 Pamela  Canaval: O K Antonio, Yo no tengo problema tampoco.
+34:15 Jaime Carrasco: O K.
+34:16 Christian Jovanny Segura Urzua: Ya. Entonces, mañana al mediodía. De repente, Dani dentro de la de la web estáis haciendo, dejemos, dejemos esta reunión, agendar igual para mañana. No es que nos vayamos a subir a la reunión, pero por lo menos quedamos todos conectados a través del chat o si se requiere algo.
+34:24 Daniel Francisco Zamora Galindo: Ya.
+34:31 Christian Jovanny Segura Urzua: ¿Tenemos el link para poder subir, no?
+34:33 Daniel Francisco Zamora Galindo: Perfecto.
+34:33 Christian Jovanny Segura Urzua: ¿YY en esa misma vamos dando el estatus de los avances para que todos los involucrados tengamos visibilidad de cómo vamos?
+34:39 Pamela  Canaval: Qué buena idea.
+34:41 Daniel Francisco Zamora Galindo: Perfecto.
+34:41 Pamela  Canaval: Sí, qué buena idea para estar atento que estemos ambos equipos al tanto YY no nos desconectemos el fin de semana. Nadie para que estemos.
+34:43 Christian Jovanny Segura Urzua: Ya.
+34:48 Pamela  Canaval: Al al tanto de lo que está pasando Al al tanto de lo que está pasando.
+34:51 Christian Jovanny Segura Urzua: Partimos mañana entonces que hemos esta reunión de 12 a una mañana a las 12 empieza la aprobación de Jose cruces y 1230 debería estar en la aprobación por el lado de TI y de ahí ya. Después hacemos un chequeo de que todas las entidades se hayan generado de manera correcta.
+34:54 Pamela  Canaval: Sí.
+34:55 Daniel Francisco Zamora Galindo: ¿Vale?
+34:55 Pamela  Canaval: Sí. ¿Qué nos va a ayudar haciendo el seguimiento tbit, Dani, Dani Zamora tú?
+35:05 Daniel Francisco Zamora Galindo: Puse RO. Perdón.
+35:11 Christian Jovanny Segura Urzua: ¿El saventa en qué sentido?
+35:12 Pamela  Canaval: Usted nos va a ayudar con el seguimiento activit de de.
+35:14 Daniel Francisco Zamora Galindo: Sí, yo. Yo soy yo, soy el administrador de de de proveedor saliente, así que yo hago coordinación con tibit.
+35:16 Pamela  Canaval: Mhm.
+35:18 Christian Jovanny Segura Urzua: Sí.
+35:22 Pamela  Canaval: Perfecto ya.
+35:27 Rojas, Luis: Ahí quería hacer un alcance. Cristian y Jose Jose, creo que fue Jose cruces fue el que quien dijo que también podía aceptar los links en los tenas, no.
+35:38 Daniel Francisco Zamora Galindo: Sí.
+35:40 Rojas, Luis: Ya eso podría hacerse, idealmente hoy, para que no quede como paso pendiente para mañana y que mañana solo sea aceptación de Transfer.
+35:58 Jose Rodrigo Cruces Aguilera: Estabas motivado, pero ya si lo vas a mandar hoy día, entonces cerremos esto ahora, pues no ahora, pero por lo menos durante las próximas horas.
+36:07 Rojas, Luis: Sí, sí, me parece buenísimo.
+36:09 Jose Rodrigo Cruces Aguilera: Ya.
+36:10 Rojas, Luis: Primero, ya ya tienes los dos links, después que esos dos links sean aceptados. Se puede generar el siguiente link de aceptación que se llama Gigabit, y ahí se los volvemos a enviar y ya con eso quedaríamos con esos pasos adelantados y.
+36:24 Jose Rodrigo Cruces Aguilera: Ya, pues entonces dejamos cerrado de aquí a las 15:00 H de la tarde y dejamos todo cerrado. La parte de la aceptación del Impug.
+36:30 Rojas, Luis: Bueno, eso. Gracias Jose.
+36:33 Christian Jovanny Segura Urzua: Luis, como tú eres proveedor entrante, por favor, en el mismo. ¿En la misma cita de de teams que tenemos, anda dándonos estatus de avance y vaya subiendo, si es que hay algún algún Guardian al cual prestarle atención para que tengamos la visibilidad, por favor ocupemos ya?
+36:49 Rojas, Luis: Perfec Perfecto. Sí, con mucho gusto y yo los voy a estar actualizando cuando ya se acepdad, cuando ya se creen los transfer request. Igual ya ahí, Diego va a poder ver en el chat la actualización.
+37:02 Christian Jovanny Segura Urzua: Ya.
+37:04 Daniel Francisco Zamora Galindo: Perfecto. ¿Estaríamos entonces chiquillos ya ya pasarle la 7?
+37:09 Christian Jovanny Segura Urzua: Daríamos por el stock.
+37:11 Daniel Francisco Zamora Galindo: Ahora, mañana. A cita el canal abierto.
+37:15 Christian Jovanny Segura Urzua: Asegúrate que llegue con el chat activado. Dani para la para los tenis, que no son internos, porfa.
+37:18 Pamela  Canaval: ¿Eso?
+37:19 Christian Jovanny Segura Urzua: Para que quede globality, igual que puedan escribir.
+37:21 Daniel Francisco Zamora Galindo: Ay, cómo hago eso.
+37:25 Christian Jovanny Segura Urzua: Está la carita de capi de la ayuda en la carito, porque yo sé que con globaly contigo tenemos relación de confianza a través de los tenant, entonces es una configuración dentro de la cita.
+37:33 Daniel Francisco Zamora Galindo: O sea. O sea, dicho Jorge.
+37:35 Christian Jovanny Segura Urzua: Que no debía quedar deshabilitado.
+37:36 Daniel Francisco Zamora Galindo: El Jorge quiero ya ya, escribieron en el chat, si te fijas.
+37:41 Christian Jovanny Segura Urzua: ¿Ah, ya vale? Es que de repente, con algunos ya dale, no he dicho nada.
+37:42 Jorge Daniel Quiroz Llanten: Sí, yo yo.
+37:42 Daniel Francisco Zamora Galindo: Sí, están están activos.
+37:43 Pamela  Canaval: Ah perfecto.
+37:45 Daniel Francisco Zamora Galindo: Ajá.
+37:46 Pamela  Canaval: Ya.
+37:46 Daniel Francisco Zamora Galindo: O K.
+37:47 Jose Rodrigo Cruces Aguilera: Ya sacamos al Jorge Quiroga.
+37:47 Christian Jovanny Segura Urzua: Ya bueno.
+37:49 Jorge Daniel Quiroz Llanten: Ja, ja ja. Tengo barrado.
+37:51 Pamela  Canaval: Ten
+37:51 Daniel Francisco Zamora Galindo: Ah.
+37:51 Christian Jovanny Segura Urzua: Tenemos más contacto con ellos, no sea así.
+37:53 Jorge Daniel Quiroz Llanten: Ja, ja.
+37:54 Daniel Francisco Zamora Galindo: No sé. Ay, ya.
+37:57 Christian Jovanny Segura Urzua: Ya y muchas gracias a todos por su por su redacción.
+37:59 Pamela  Canaval: Ya te quiero que estés bien cuídese gracias Chao Chao
+37:59 Daniel Francisco Zamora Galindo: Gracias a todos, Chao que estén bien, adiós, Chao.
+38:02 Jose Rodrigo Cruces Aguilera: Ya que te vi
+  

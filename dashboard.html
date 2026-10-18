@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FroggIteAms Hub — Historial de Reuniones, Transcripciones y Reportes de Solicitudes</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Left Sidebar (Tactiq-style Navigation + Meetings History) -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="assets/icon-128.png" alt="FroggIteAms" class="sidebar-logo" />
+        <div>
+          <h1 class="sidebar-title">FroggIteAms</h1>
+          <span class="sidebar-badge">MS Teams AI Hub</span>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <label for="file-import-txt" class="btn-sidebar-action">
+          📂 Importar Reunión (.TXT)
+        </label>
+        <input type="file" id="file-import-txt" accept=".txt" hidden />
+        <button id="btn-open-ai-modal" class="btn-sidebar-secondary">
+          🤖 Configurar IA (Gemini / DeepSeek)
+        </button>
+      </div>
+
+      <div class="sidebar-search-wrap">
+        <input type="search" id="sidebar-search" class="sidebar-search" placeholder="🔍 Filtrar reuniones o personas..." />
+      </div>
+
+      <div class="sidebar-section-label">HISTÓRICO DE REUNIONES</div>
+      <div id="sidebar-meetings-list" class="sidebar-meetings-list"></div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-area">
+      <!-- Meeting Top Header -->
+      <header class="meeting-header">
+        <div class="meeting-header-info">
+          <div class="meeting-kicker">TRANSCRIPCIÓN Y ANÁLISIS MICROSOFT TEAMS</div>
+          <h2 id="main-meeting-title" class="main-meeting-title">Cargando reunión...</h2>
+          <div class="meeting-meta-pills" id="main-meeting-meta"></div>
+        </div>
+
+        <div class="export-toolbar">
+          <button id="btn-export-txt" class="btn-export" title="Exportar exactamente con el formato Tactiq (.txt)">
+            📄 Exportar TXT (Formato Tactiq)
+          </button>
+          <button id="btn-export-csv" class="btn-export" title="Exportar transcripción completa en CSV">
+            📊 Exportar CSV
+          </button>
+          <button id="btn-generate-report" class="btn-export btn-ai-glow" title="Analizar con IA y generar reporte de solicitudes">
+            ✨ Generar Reporte Solicitudes IA
+          </button>
+        </div>
+      </header>
+
+      <!-- Sub-navigation inside Selected Meeting -->
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="transcript">💬 Transcripción & Highlights</button>
+        <button class="view-tab" data-view="requests">📋 Reporte de Solicitudes Realizadas <span id="requests-badge" class="badge-count">0</span></button>
+        <button class="view-tab" data-view="raw">📝 Vista Previa TXT (Estilo Tactiq)</button>
+      </div>
+
+      <!-- VIEW 1: Transcript & Highlights -->
+      <section class="view-section active" id="view-transcript">
+        <div class="transcript-grid">
+          <!-- Left Column: Full Interactive Transcript -->
+          <div class="card transcript-card">
+            <div class="card-header">
+              <h3>Transcripción Completa</h3>
+              <div class="transcript-filters">
+                <input type="search" id="search-in-transcript" class="input-sm" placeholder="Buscar palabra o hablante..." />
+                <select id="speaker-filter" class="input-sm">
+                  <option value="">Todos los participantes</option>
+                </select>
+              </div>
+            </div>
+            <div id="transcript-lines-container" class="transcript-lines-container"></div>
+          </div>
+
+          <!-- Right Column: Highlights & Participants -->
+          <div class="side-column">
+            <div class="card highlights-card">
+              <div class="card-header">
+                <h3>⭐ Highlights Destacados</h3>
+                <span id="highlights-count" class="pill-count">0</span>
+              </div>
+              <p class="card-subtitle">Haz clic en la estrella ☆ de cualquier intervención para añadirla o quitarla de Highlights.</p>
+              <div id="highlights-container" class="highlights-container"></div>
+            </div>
+
+            <div class="card participants-card">
+              <div class="card-header">
+                <h3>👥 Participantes</h3>
+                <span id="participants-count" class="pill-count">0</span>
+              </div>
+              <div id="participants-chips" class="participants-chips"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: Requests Report (Reporte de Solicitudes Realizadas en la Reunión) -->
+      <section class="view-section" id="view-requests">
+        <div class="requests-header-card card">
+          <div class="requests-summary-top">
+            <div>
+              <h3>📌 Reporte de Solicitudes y Compromisos de la Reunión</h3>
+              <p id="report-provider-meta" class="report-provider-meta"></p>
+            </div>
+            <div class="requests-export-group">
+              <button id="btn-export-report-txt" class="btn-sm-outline">📄 Descargar Reporte (.TXT)</button>
+              <button id="btn-export-report-csv" class="btn-sm-outline">📊 Descargar Solicitudes (.CSV)</button>
+              <button id="btn-rerun-ai-report" class="btn-sm-primary">🔄 Re-analizar con IA</button>
+            </div>
+          </div>
+
+          <div class="executive-summary-box">
+            <h4>Resumen Ejecutivo</h4>
+            <p id="report-executive-summary">Genera un reporte para visualizar el resumen ejecutivo y todas las solicitudes detectadas.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Matriz de Solicitudes Realizadas</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="requests-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Minuto</th>
+                  <th>Solicitante</th>
+                  <th>Responsable / Asignado</th>
+                  <th>Solicitud / Compromiso Realizado</th>
+                  <th>Prioridad</th>
+                  <th>Plazo</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="requests-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>🤝 Acuerdos Clave de la Sesión</h3>
+          </div>
+          <ul id="report-agreements-list" class="agreements-list"></ul>
+        </div>
+      </section>
+
+      <!-- VIEW 3: Exact Tactiq Raw TXT Preview -->
+      <section class="view-section" id="view-raw">
+        <div class="card raw-card">
+          <div class="card-header">
+            <h3>Vista Previa Exacta Formato Tactiq (.TXT)</h3>
+            <div class="raw-actions">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="chk-include-report-in-txt" />
+                Incluir anexo de Reporte de Solicitudes al final del TXT
+              </label>
+              <button id="btn-copy-raw-txt" class="btn-sm-primary">📋 Copiar Texto</button>
+            </div>
+          </div>
+          <pre id="raw-txt-preview" class="raw-txt-preview"></pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI Settings Modal (Gemini OAuth/API Key, DeepSeek, OpenAI, Custom) -->
+  <div id="ai-modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🤖 Configuración de Proveedor IA (Transcripción y Reportes)</h3>
+        <button id="btn-close-ai-modal" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Elige el proveedor de inteligencia artificial para limpiar transcripciones en tiempo real y extraer el reporte de solicitudes de tus reuniones de Microsoft Teams:
+        </p>
+
+        <label class="form-label">Proveedor Principal</label>
+        <select id="modal-ai-provider" class="form-select">
+          <option value="gemini">Google Gemini (OAuth 2.0 o API Key)</option>
+          <option value="deepseek">DeepSeek (API Key - deepseek-chat / reasoner)</option>
+          <option value="openai">OpenAI (API Key - gpt-4o-mini / gpt-4o)</option>
+          <option value="custom">Groq / Otro Endpoint Compatible OpenAI</option>
+          <option value="local">Motor Heurístico Local (Sin conexión / Sin Token)</option>
+        </select>
+
+        <div id="modal-box-gemini" class="modal-provider-section">
+          <div class="radio-row">
+            <label><input type="radio" name="modal-gemini-mode" value="apikey" checked /> Gemini API Key</label>
+            <label><input type="radio" name="modal-gemini-mode" value="oauth" /> Google OAuth 2.0 Token</label>
+          </div>
+          <div id="modal-gemini-apikey-wrap">
+            <label class="form-label">Gemini API Key (Google AI Studio)</label>
+            <input type="password" id="modal-gemini-key" class="form-input" placeholder="AIzaSy..." />
+          </div>
+          <div id="modal-gemini-oauth-wrap" class="hidden">
+            <label class="form-label">Google OAuth Client ID (Opcional)</label>
+            <input type="text" id="modal-gemini-client-id" class="form-input" placeholder="xxxx.apps.googleusercontent.com" />
+            <button id="btn-modal-oauth" class="btn-oauth-flow">🔐 Iniciar Sesión con Google OAuth 2.0</button>
+            <label class="form-label">Bearer Token OAuth 2.0</label>
+            <input type="password" id="modal-gemini-oauth-token" class="form-input" placeholder="ya29.a0..." />
+          </div>
+          <label class="form-label">Modelo Gemini</label>
+          <input type="text" id="modal-gemini-model" class="form-input" value="gemini-2.0-flash" />
+        </div>
+
+        <div id="modal-box-deepseek" class="modal-provider-section hidden">
+          <label class="form-label">DeepSeek API Token</label>
+          <input type="password" id="modal-deepseek-key" class="form-input" placeholder="sk-..." />
+          <label class="form-label">Modelo DeepSeek</label>
+          <input type="text" id="modal-deepseek-model" class="form-input" value="deepseek-chat" />
+        </div>
+
+        <div id="modal-box-openai" class="modal-provider-section hidden">
+          <label class="form-label">OpenAI API Token</label>
+          <input type="password" id="modal-openai-key" class="form-input" placeholder="sk-proj-..." />
+          <label class="form-label">Modelo OpenAI</label>
+          <input type="text" id="modal-openai-model" class="form-input" value="gpt-4o-mini" />
+        </div>
+
+        <div id="modal-box-custom" class="modal-provider-section hidden">
+          <label class="form-label">Endpoint Chat Completions</label>
+          <input type="text" id="modal-custom-endpoint" class="form-input" value="https://api.groq.com/openai/v1/chat/completions" />
+          <label class="form-label">API Token</label>
+          <input type="password" id="modal-custom-key" class="form-input" placeholder="gsk_..." />
+          <label class="form-label">Modelo</label>
+          <input type="text" id="modal-custom-model" class="form-input" value="llama-3.3-70b-versatile" />
+        </div>
+
+        <div id="modal-save-feedback" class="modal-feedback"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-modal-ai" class="btn-sm-primary">💾 Guardar Token y Proveedor</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
